@@ -17,7 +17,7 @@ public class Building {
     private boolean previousBuildingUpgrade; //1% per previous level
     private boolean groupUpgrade; // 10% group
     private String groupUpgrade10;
-    private ArrayList<String> groupUpgrade50; // 50% groups upgrades
+    private ArrayList<String> groupUpgrade50 = new ArrayList<>(); // 50% groups upgrades
 
     public Building(String name, String group, String[] groups, double defaultProduction, double defaultPrice, Building previousBuilding) { // constructor with all upgrades
         this.name = name;
@@ -71,7 +71,8 @@ public class Building {
         this.sameBuildingUpgrade = building.isSameBuildingUpgrade();
         this.previousBuildingUpgrade = building.isPreviousBuildingUpgrade();
         this.groupUpgrade = building.isGroupUpgrade();
-        this.groupUpgrade50 = building.groupUpgrade50;
+        this.groupUpgrade50 = new ArrayList<>();
+        this.groupUpgrade50.addAll(building.getGroupUpgrade50());
         this.groupUpgrade10 = building.groupUpgrade10;
         calculateUnitProduction();
     }

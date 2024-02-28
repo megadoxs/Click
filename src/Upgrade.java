@@ -66,7 +66,7 @@ public class Upgrade {
     }
 
     public void applyUpgrade(){
-        switch (type){
+        switch (this.type){
             case "Job":
                 this.building.setJobUpgrade(true);
                 break;
@@ -122,15 +122,16 @@ public class Upgrade {
             for (int i = 0; i < this.group.length; i++){
                 group[i] = new Building(this.group[i]);
             }
-            switch (type){
+            switch (this.type){
                 case "10% group":
                     for (int i = 0; i < this.group.length; i++){
                         group[i].setGroupUpgrade(true);
                     }
                     break;
-                case "50% group 1":
+                case "50% group":
                     for (int i = 0; i < this.group.length; i++){
-                        group[i].addGroupUpgrade50(this.groupName);
+                        if(!group[i].hasUpgrade(this.type, this.groupName))
+                            group[i].addGroupUpgrade50(this.groupName);
                     }
                     break;
             }
