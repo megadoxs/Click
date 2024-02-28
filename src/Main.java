@@ -18,16 +18,16 @@ public class Main {
         Buildings[3] = new Building("Jardin de mamie", "fermier", 0.584, 12500);
         Buildings[4] = new Building("Cabane de sorcière", "alchimiste", new String[]{}, 1.06, 27500, Buildings[3]);
         Buildings[5] = new Building("Ruche Bourdonnate", "alchimiste", new String[]{}, 1.89, 67500, Buildings[4]);
-        Buildings[6] = new Building("Foret enneigé", "alchimiste", new String[]{"gelé"}, 3.4, 125000, Buildings[5]);
+        Buildings[6] = new Building("Foret enneigé", "alchimiste", new String[]{"gelé", "foret"}, 3.4, 125000, Buildings[5]);
         Buildings[7] = new Building("Banquise gelée", "", new String[]{"gelé", "eau"}, 6.12, 315000, Buildings[6]);
         Buildings[8] = new Building("Port de pirate", "", new String[]{"humanoide", "eau"}, 11, 650000, Buildings[7]);
         Buildings[9] = new Building("Ile volcanique", "fermier", new String[]{}, 20, 1574000, Buildings[8]);
         Buildings[10] = new Building("Dune caniculaire", "", new String[]{}, 36, 3150000, Buildings[9]);
-        Buildings[11] = new Building("Forêt mystique", "", new String[]{}, 64, 6000000, Buildings[10]);
-        Buildings[12] = new Building("Jungle luxuriante", "", new String[]{}, 115, 11500000, Buildings[11]);
-        Buildings[13] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[14] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[15] = new Building("", "", new String[]{}, 0, 0);
+        Buildings[11] = new Building("Forêt mystique", "", new String[]{"foret"}, 64, 6000000, Buildings[10]);
+        Buildings[12] = new Building("Jungle luxuriante", "", new String[]{"foret"}, 115, 11500000, Buildings[11]);
+        Buildings[13] = new Building("Temple oublié", "", new String[]{}, 208, 25750000);
+        Buildings[14] = new Building("Crypte Millénaire", "", new String[]{}, 375, 550000000);
+        Buildings[15] = new Building("Goufre sans fond", "", new String[]{}, 742, 950000000);
         Buildings[16] = new Building("", "", new String[]{}, 0, 0);
         Buildings[17] = new Building("", "", new String[]{}, 0, 0);
         Buildings[18] = new Building("", "", new String[]{}, 0, 0);
@@ -51,9 +51,7 @@ public class Main {
 
         //makes the dir to store the data txt files
         Path path = Paths.get("./data");
-        if (Files.exists(path) && Files.isDirectory(path)) {
-            System.out.println("Directory already exists at: " + path);
-        } else {
+        if (!Files.exists(path) && Files.isDirectory(path)) {
             try {
                 Files.createDirectories(path);
             } catch (IOException ignored) {}

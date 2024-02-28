@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class GUI extends JFrame{
     private final Building[] buildings;
     private final String[] groups10 = new String[]{"mineur", "fermier", "alchimiste"};
-    private final String[] groups50 = new String[]{"humanoide", "gelé", "eau"};
+    private final String[] groups50 = new String[]{"humanoide", "gelé", "eau", "foret"};
     private ArrayList<Upgrade> upgrades;
     private JTextField[] levels;
     private JTextField[] prod;
@@ -531,7 +531,7 @@ public class GUI extends JFrame{
                         }
                         selectTarget.setSelectedItem(null);
                     }
-                    if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("200%")){
+                    else if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("200%")){
                         selectTarget.removeAllItems();
                         for (int i = 0; i < GUI.this.buildings.length; i++){
                             if(GUI.this.buildings[i].getLevel() > 0 && !GUI.this.buildings[i].hasUpgrade("200%") && GUI.this.buildings[i].hasUpgrade("100%") && !Upgrade.upgradeExist(GUI.this.upgrades, buildings[i].getName(), selectType.getSelectedItem().toString()))
