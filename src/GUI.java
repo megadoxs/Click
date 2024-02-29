@@ -712,6 +712,24 @@ public class GUI extends JFrame{
             JLabel price = new JLabel("Price");
             add(price, gbc);
 
+            gbc.insets = new Insets(5, 30, 5, 5);
+            gbc.gridx = 9;
+            JLabel options = new JLabel("Options");
+            options.setFont(new Font(options.getFont().getName(), Font.PLAIN, 20));
+            add(options, gbc);
+
+            gbc.gridy++;
+            JButton addUpgrade = new JButton("Add Upgrade");
+            addUpgrade.setMargin(new Insets(0, 0, 0, 0));
+            addUpgrade addUpgradeListener = new addUpgrade();
+            addUpgrade.addActionListener(addUpgradeListener);
+            add(addUpgrade, gbc);
+
+            gbc.gridy++;
+            JButton seeUpgrade = new JButton("See Building's upgrades");
+            seeUpgrade.setMargin(new Insets(0, 0, 0, 0));
+            add(seeUpgrade, gbc);
+
             applyEdit = new BetterButton[GUI.this.buildings.length];
             cancelEdit = new BetterButton[GUI.this.buildings.length];
 
@@ -804,6 +822,7 @@ public class GUI extends JFrame{
                 //delete button
                 gbc.insets = new Insets(5, 2, 5, 2);
                 delUpgrade[i] = new BetterButton("delete", i);
+                delUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
                 add(delUpgrade[i], gbc);
                 delUpgrade delUpgradeListener = new delUpgrade();
                 delUpgrade[i].addActionListener(delUpgradeListener);
@@ -811,6 +830,7 @@ public class GUI extends JFrame{
 
                 //apply button
                 editUpgrade[i] = new BetterButton("edit", i);
+                editUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
                 add(editUpgrade[i], gbc);
                 editUpgrade editUpgradeListener = new editUpgrade();
                 editUpgrade[i].addActionListener(editUpgradeListener);
@@ -818,6 +838,7 @@ public class GUI extends JFrame{
 
                 //apply button
                 buyUpgrade[i] = new BetterButton("buy", i);
+                buyUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
                 add(buyUpgrade[i], gbc);
                 buyUpgrade buyUpgradeListener = new buyUpgrade();
                 buyUpgrade[i].addActionListener(buyUpgradeListener);
@@ -866,11 +887,14 @@ public class GUI extends JFrame{
 
                 gbc.gridx = 6;
                 cancelEdit[id] = new BetterButton("Cancel", id);
+                cancelEdit[id].setMargin(new Insets(0, 0, 0, 0));
                 cancelEdit cancelEditListener = new cancelEdit();
                 cancelEdit[id].addActionListener(cancelEditListener);
                 add(cancelEdit[id], gbc);
+
                 gbc.gridx++;
                 applyEdit[id] = new BetterButton("Apply", id);
+                applyEdit[id].setMargin(new Insets(0, 0, 0, 0));
                 applyEdit applyEditListener = new applyEdit();
                 applyEdit[id].addActionListener(applyEditListener);
                 add(applyEdit[id], gbc);
