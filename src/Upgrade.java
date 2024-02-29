@@ -1,15 +1,19 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Upgrade {
-    private final String name;
-    private final String type;
+    private String name;
+    private String type;
     private Building building;
     private Building[] group;
     private String groupName;
 
     private boolean multiple;
-    private final int price;
+    private int price;
 
     public Upgrade(String name, String type, Building building, int price) {
         this.name = name;
@@ -26,6 +30,32 @@ public class Upgrade {
         this.group = group;
         this.price = price;
         this.multiple = true;
+    }
+
+    public Upgrade(Upgrade upgrade) {
+        this.name = upgrade.getName();
+        this.type = upgrade.getType();
+        this.groupName = upgrade.getGroupName();
+        this.group = upgrade.getGroup();
+        this.building = upgrade.getBuilding();
+        this.price = upgrade.getPrice();
+        this.multiple = upgrade.isMultiple();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public boolean isMultiple() {
+        return multiple;
     }
 
     public String getName() {
@@ -204,5 +234,46 @@ public class Upgrade {
             return true;
         else
             return false;
+    }
+
+    public static void delUpgrade(ArrayList<Upgrade> upgrades, Upgrade upgrade){
+        try {
+            File iFile = new File("./data/upgrades.txt");
+            Scanner inputFile = new Scanner(iFile);
+            File OFile = new File("temp.txt");
+            PrintWriter outputFile = new PrintWriter(OFile);
+
+            while (inputFile.hasNextLine()) {
+                String lineUpgrade = inputFile.nextLine();
+                if(!lineUpgrade.equals(upgrade.getName()+ "|" + upgrade.getType() + "|" + upgrade.getTargetName() + "|" + upgrade.getPrice()))
+                    outputFile.println(lineUpgrade);
+            }
+
+            upgrades.remove(upgrade);
+
+            inputFile.close();
+            outputFile.close();
+            iFile.delete();
+            OFile.renameTo(new File("./data/upgrades.txt"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void sortUpgrades(ArrayList<Upgrade> upgrades){
+        ArrayList<Upgrade> sort = new ArrayList<>();
+        while(!upgrades.isEmpty()){
+            int id = 0;
+            double value = 0;
+            for (int i = 0; i < upgrades.size(); i++){
+                if (upgrades.get(i).getUpgradeValue() > value) {
+                    value = upgrades.get(i).getUpgradeValue();
+                    id = i;
+                }
+            }
+            sort.add(upgrades.get(id));
+            upgrades.remove(id);
+        }
+        upgrades.addAll(sort);
     }
 }

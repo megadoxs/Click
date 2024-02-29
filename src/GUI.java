@@ -20,6 +20,8 @@ public class GUI extends JFrame{
     private JLabel[] statsValue;
     private static AddUpgradeGUI addUpgradeGUI;
 
+    private static listUpgradeGUI listUpgradeGUI;
+
     public GUI(Building[] buildings, ArrayList<Upgrade> upgrades){
         this.buildings = buildings;
         this.upgrades = upgrades;
@@ -173,8 +175,10 @@ public class GUI extends JFrame{
         add(addUpgrade, gbc);
 
         gbc.gridy++;
+        listUpgrade listUpgradeListener = new listUpgrade();
         JButton upgradeList = new JButton("Upgrade List");
         upgradeList.setMargin(new Insets(0, 0, 0, 0));
+        upgradeList.addActionListener(listUpgradeListener);
         add(upgradeList, gbc);
 
         gbc.gridy++;
@@ -239,18 +243,18 @@ public class GUI extends JFrame{
 
     private String[] getBestPurchase(){
         String[] bestPurchase = new String[5];
-        if (Building.getBestPurchase(buildings).getValue() > Upgrade.getBestPurchase(upgrades).getValue()){
-            bestPurchase[0] = GUI.this.buildings[Building.getBestPurchase(buildings).getIndex()].getName();
+        if (Building.getBestPurchase(GUI.this.buildings).getValue() > Upgrade.getBestPurchase(GUI.this.upgrades).getValue()){
+            bestPurchase[0] = GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()].getName();
             bestPurchase[1] = "Building";
-            bestPurchase[2] = Building.getFormattedUpgradeBoost(buildings[Building.getBestPurchase(buildings).getIndex()]);
-            bestPurchase[3] = Building.getFormattedNewProd(buildings, GUI.this.buildings[Building.getBestPurchase(buildings).getIndex()]);
-            bestPurchase[4] = GUI.this.buildings[Building.getBestPurchase(buildings).getIndex()].getFormattedUpgradePrice();
+            bestPurchase[2] = Building.getFormattedUpgradeBoost(GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()]);
+            bestPurchase[3] = Building.getFormattedNewProd(GUI.this.buildings, GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()]);
+            bestPurchase[4] = GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()].getFormattedUpgradePrice();
         }else {
-            bestPurchase[0] = GUI.this.upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getName();
+            bestPurchase[0] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getName();
             bestPurchase[1] = "Upgrade";
-            bestPurchase[2] = GUI.this.upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getFormattedUpgradeBoost();
-            bestPurchase[3] = GUI.this.upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getFormattedNewProd(buildings);
-            bestPurchase[4] = GUI.this.upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getFormattedPrice();
+            bestPurchase[2] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedUpgradeBoost();
+            bestPurchase[3] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedNewProd(GUI.this.buildings);
+            bestPurchase[4] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedPrice();
         }
         return bestPurchase;
     }
@@ -281,40 +285,22 @@ public class GUI extends JFrame{
                 updateBuildings(evt);
             }
             else{
-                try {
-                    File iFile = new File("./data/upgrades.txt");
-                    Scanner inputFile = new Scanner(iFile);
-                    File OFile = new File("temp.txt");
-                    PrintWriter outputFile = new PrintWriter(OFile);
-                    int UpgradeIndex = Upgrade.getBestPurchase(upgrades).getIndex();
-
-                    while (inputFile.hasNextLine()) {
-                        String upgrade = inputFile.nextLine();
-                        if(!upgrade.equals(upgrades.get(UpgradeIndex).getName()+ "|" + upgrades.get(UpgradeIndex).getType() + "|" + upgrades.get(UpgradeIndex).getTargetName() + "|" + upgrades.get(UpgradeIndex).getPrice())){
-                            outputFile.println(upgrade);
-                        }
-                    }
-
-                    inputFile.close();
-                    outputFile.close();
-                    iFile.delete();
-                    OFile.renameTo(new File("./data/upgrades.txt"));
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-                upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).applyUpgrade();
-                if(upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getGroup() != null){
-                    for (int i = 0; i < upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getGroup().length; i++){
-                        ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getGroup()[i].getName()).getIndex());
+                int id = Upgrade.getBestPurchase(upgrades).getIndex();
+                upgrades.get(id).applyUpgrade();
+                if(upgrades.get(id).getGroup() != null){
+                    for (int i = 0; i < upgrades.get(id).getGroup().length; i++){
+                        ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(id).getGroup()[i].getName()).getIndex());
                         updateBuildings(evt);
                     }
                 }
                 else{
-                    ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()).getBuilding().getName()).getIndex());
+                    ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(id).getBuilding().getName()).getIndex());
                     updateBuildings(evt);
                 }
+                Upgrade.delUpgrade(upgrades, upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()));
+                listUpgradeGUI.updateUpgrades();
             }
-            updateStats();
+            addUpgradeGUI.updateStats();
         }
     }
 
@@ -324,6 +310,16 @@ public class GUI extends JFrame{
                 addUpgradeGUI = new AddUpgradeGUI();
             } else {
                 addUpgradeGUI.toFront();
+            }
+        }
+    }
+
+    private class listUpgrade implements ActionListener {
+        public void actionPerformed(ActionEvent evt) {
+            if (listUpgradeGUI == null) {
+                listUpgradeGUI = new listUpgradeGUI();
+            } else {
+                listUpgradeGUI.toFront();
             }
         }
     }
@@ -424,7 +420,7 @@ public class GUI extends JFrame{
             add(selectTarget, gbc);
 
             gbc.gridy++;
-            enterPrice = new NumericTextField();
+            enterPrice = new NumericTextField("addUpgrade");
             add(enterPrice, gbc);
 
             gbc.gridy++;
@@ -474,7 +470,9 @@ public class GUI extends JFrame{
             add(options, gbc);
 
             gbc.gridy++;
+            listUpgrade listUpgradeListener = new listUpgrade();
             JButton upgradeList = new JButton("Upgrade List");
+            upgradeList.addActionListener(listUpgradeListener);
             upgradeList.setMargin(new Insets(0, 0, 0, 0));
             add(upgradeList, gbc);
 
@@ -513,7 +511,7 @@ public class GUI extends JFrame{
             selectTarget.addActionListener(updateUpgradeListener);
 
 
-            selectType.addActionListener(new ActionListener() { // need to remove the possibility to select an a target that already has that upgrade
+            selectType.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("10% group")){
                         selectTarget.removeAllItems();
@@ -585,6 +583,7 @@ public class GUI extends JFrame{
                         enterPrice.setText("");
                         selectType.setSelectedItem(null);
                         GUI.this.updateStats();
+                        listUpgradeGUI.updateUpgrades();
                     }
                 }
             });
@@ -646,48 +645,6 @@ public class GUI extends JFrame{
             AddUpgradeGUI.this.pack();
         }
 
-        public class NumericTextField extends JTextField {
-            private DecimalFormat formatter;
-
-            public NumericTextField() {
-                super();
-
-                formatter = new DecimalFormat("#,###");
-                formatter.setGroupingSize(3);
-                formatter.setParseIntegerOnly(true);
-
-                addKeyListener(new KeyListener() {
-                    @Override
-                    public void keyTyped(KeyEvent e) {
-                        char c = e.getKeyChar();
-                        if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
-                            e.consume();
-                        }
-                    }
-
-                    @Override
-                    public void keyPressed(KeyEvent e) {
-                    }
-
-                    @Override
-                    public void keyReleased(KeyEvent e) {
-                        formatText();
-                        AddUpgradeGUI.this.updateStats();
-                    }
-                });
-            }
-
-            private void formatText() {
-                try {
-                    String text = getText().replaceAll("\\s", "");
-                    long value = formatter.parse(text).longValue();
-                    String formattedText = formatter.format(value);
-                    setText(formattedText);
-                    AddUpgradeGUI.this.updateStats();
-                } catch (ParseException e) {}
-            }
-        }
-
         private void addClosingListener() {
             addWindowListener(new WindowAdapter() {
                 @Override
@@ -695,6 +652,347 @@ public class GUI extends JFrame{
                     addUpgradeGUI = null;
                 }
             });
+        }
+    }
+
+    private class listUpgradeGUI extends JFrame{
+
+        private JLabel[] upgradeNumber;
+        private JTextField[] upgradeName;
+        private JTextField[] upgradeType;
+        private JTextField[] upgradeTarget;
+        private JTextField[] upgradeProd;
+        private NumericTextField[] upgradePrice;
+        private BetterButton[] buyUpgrade;
+        private BetterButton[] editUpgrade;
+        private BetterButton[] delUpgrade;
+        private BetterButton[] applyEdit;
+        private BetterButton[] cancelEdit;
+
+        listUpgradeGUI(){
+            setTitle("Upgrade List");
+            setVisible(true);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            addClosingListener();
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 5, 5, 5);
+
+            //page body
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 9;
+            JLabel listUpgrade = new JLabel("Upgrade List");
+            listUpgrade.setFont(new Font(listUpgrade.getFont().getName(), Font.PLAIN, 20));
+            add(listUpgrade, gbc);
+            gbc.gridwidth = 1;
+
+            gbc.gridy++;
+            JLabel number = new JLabel("Number");
+            add(number, gbc);
+            gbc.gridx++;
+
+            JLabel name = new JLabel("Name");
+            add(name, gbc);
+            gbc.gridx++;
+
+            JLabel type = new JLabel("Type");
+            add(type, gbc);
+            gbc.gridx++;
+
+            JLabel target = new JLabel("Target");
+            add(target, gbc);
+            gbc.gridx++;
+
+            JLabel prod = new JLabel("Prod Boost");
+            add(prod, gbc);
+            gbc.gridx++;
+
+            JLabel price = new JLabel("Price");
+            add(price, gbc);
+
+            applyEdit = new BetterButton[GUI.this.buildings.length];
+            cancelEdit = new BetterButton[GUI.this.buildings.length];
+
+            updateUpgrades();
+        }
+
+        private void updateUpgrades(){
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 5, 5, 5);
+
+            if (upgradeNumber != null)
+                for (int i = 0; i < upgradeNumber.length; i++){
+                    try {
+                        remove(upgradeNumber[i]);
+                        remove(upgradeName[i]);
+                        remove(upgradeType[i]);
+                        remove(upgradeTarget[i]);
+                        remove(upgradeProd[i]);
+                        remove(upgradePrice[i]);
+                        remove(buyUpgrade[i]);
+                        remove(editUpgrade[i]);
+                        remove(delUpgrade[i]);
+                        remove(applyEdit[i]);
+                        remove(cancelEdit[i]);
+                    }catch (NullPointerException ignored){}
+                }
+
+            //make new objects
+            upgradeNumber = new JLabel[GUI.this.upgrades.size()];
+            upgradeName = new JTextField[GUI.this.upgrades.size()];
+            upgradeType = new JTextField[GUI.this.upgrades.size()];
+            upgradeTarget = new JTextField[GUI.this.upgrades.size()];
+            upgradeProd = new JTextField[GUI.this.upgrades.size()];
+            upgradePrice = new NumericTextField[GUI.this.upgrades.size()];
+            buyUpgrade = new BetterButton[GUI.this.upgrades.size()];
+            editUpgrade = new BetterButton[GUI.this.upgrades.size()];
+            delUpgrade = new BetterButton[GUI.this.upgrades.size()];
+            applyEdit = new BetterButton[GUI.this.upgrades.size()];
+            cancelEdit = new BetterButton[GUI.this.upgrades.size()];
+
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            Upgrade.sortUpgrades(upgrades);
+            for (int i = 0; i < GUI.this.upgrades.size(); i++){
+                //start
+                gbc.gridx = 0;
+                gbc.insets = new Insets(5, 5, 5, 5);
+
+                //upgrade number
+                upgradeNumber[i] = new JLabel(String.valueOf(i+1));
+                upgradeNumber[i].setHorizontalAlignment(JTextField.CENTER);
+                add(upgradeNumber[i], gbc);
+                gbc.gridx++;
+
+                //upgrade name
+                upgradeName[i] = new JTextField(upgrades.get(i).getName());
+                upgradeName[i].setEditable(false);
+                add(upgradeName[i], gbc);
+                gbc.gridx++;
+
+                //upgrade type
+                upgradeType[i] = new JTextField(upgrades.get(i).getType());
+                upgradeType[i].setEditable(false);
+                add(upgradeType[i], gbc);
+                gbc.gridx++;
+
+                //upgrade target
+                upgradeTarget[i] = new JTextField(upgrades.get(i).getTargetName());
+                upgradeTarget[i].setEditable(false);
+                add(upgradeTarget[i], gbc);
+                gbc.gridx++;
+
+                //upgrade price
+                upgradeProd[i] = new JTextField();
+                upgradeProd[i].setText(upgrades.get(i).getFormattedUpgradeBoost());
+                upgradeProd[i].setEditable(false);
+                upgradeProd[i].setHorizontalAlignment(JTextField.RIGHT);
+                add(upgradeProd[i], gbc);
+                gbc.gridx++;
+
+                //upgrade price
+                upgradePrice[i] = new NumericTextField("listUpgrade");
+                upgradePrice[i].setText(upgrades.get(i).getFormattedPrice());
+                upgradePrice[i].setEditable(false);
+                upgradePrice[i].setHorizontalAlignment(JTextField.RIGHT);
+                add(upgradePrice[i], gbc);
+                gbc.gridx++;
+
+                //delete button
+                gbc.insets = new Insets(5, 2, 5, 2);
+                delUpgrade[i] = new BetterButton("delete", i);
+                add(delUpgrade[i], gbc);
+                delUpgrade delUpgradeListener = new delUpgrade();
+                delUpgrade[i].addActionListener(delUpgradeListener);
+                gbc.gridx++;
+
+                //apply button
+                editUpgrade[i] = new BetterButton("edit", i);
+                add(editUpgrade[i], gbc);
+                editUpgrade editUpgradeListener = new editUpgrade();
+                editUpgrade[i].addActionListener(editUpgradeListener);
+                gbc.gridx++;
+
+                //apply button
+                buyUpgrade[i] = new BetterButton("buy", i);
+                add(buyUpgrade[i], gbc);
+                buyUpgrade buyUpgradeListener = new buyUpgrade();
+                buyUpgrade[i].addActionListener(buyUpgradeListener);
+
+                //end
+                gbc.gridy++;
+            }
+            pack();
+        }
+
+
+        private class buyUpgrade implements ActionListener {
+            public void actionPerformed(ActionEvent evt) {
+                int id = ((BetterButton) evt.getSource()).getId();
+                upgrades.get(id).applyUpgrade();
+                if(upgrades.get(id).getGroup() != null){
+                    for (int i = 0; i < upgrades.get(id).getGroup().length; i++){
+                        ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(id).getGroup()[i].getName()).getIndex());
+                        GUI.this.updateBuildings(evt);
+                    }
+                }
+                else{
+                    ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(id).getBuilding().getName()).getIndex());
+                    GUI.this.updateBuildings(evt);
+                }
+                Upgrade.delUpgrade(upgrades, upgrades.get(id));
+                updateUpgrades();
+                addUpgradeGUI.updateStats();
+            }
+        }
+
+        private class editUpgrade implements ActionListener {
+            public void actionPerformed(ActionEvent evt) {
+                int id = ((BetterButton) evt.getSource()).getId();
+                remove(buyUpgrade[id]);
+                remove(editUpgrade[id]);
+                remove(delUpgrade[id]);
+
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.insets = new Insets(5, 2, 5, 2);
+                gbc.gridy = (id+2);
+
+                upgradePrice[id].setEditable(true);
+                upgradeName[id].setEditable(true);
+
+                gbc.gridx = 6;
+                cancelEdit[id] = new BetterButton("Cancel", id);
+                cancelEdit cancelEditListener = new cancelEdit();
+                cancelEdit[id].addActionListener(cancelEditListener);
+                add(cancelEdit[id], gbc);
+                gbc.gridx++;
+                applyEdit[id] = new BetterButton("Apply", id);
+                applyEdit applyEditListener = new applyEdit();
+                applyEdit[id].addActionListener(applyEditListener);
+                add(applyEdit[id], gbc);
+
+                pack();
+            }
+        }
+
+        private class delUpgrade implements ActionListener {
+            public void actionPerformed(ActionEvent evt) {
+                Upgrade.delUpgrade(upgrades, upgrades.get(((BetterButton) evt.getSource()).getId()));
+                updateUpgrades();
+            }
+        }
+
+        private class applyEdit implements ActionListener {
+            public void actionPerformed(ActionEvent evt) {
+                int i = ((BetterButton) evt.getSource()).getId();
+                if (!upgradeName[i].getText().trim().isEmpty() && !upgradePrice[i].getText().trim().isEmpty()){
+                    Upgrade edited = new Upgrade(upgrades.get(i));
+                    edited.setName(upgradeName[i].getText());
+                    edited.setPrice(Integer.parseInt(upgradePrice[i].getText().replaceAll("[^0-9]", "")));
+                    Upgrade.delUpgrade(upgrades, upgrades.get(i));
+                    upgrades.add(edited);
+
+                    try {
+                        PrintWriter outputFile = new PrintWriter(new FileWriter("./data/upgrades.txt", true));
+                        outputFile.print(edited.getName() + "|");
+                        outputFile.print(edited.getType() + "|");
+                        outputFile.print(edited.getTargetName() + "|");
+                        outputFile.print(edited.getPrice());
+                        outputFile.close();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                    updateUpgrades();
+                    pack();
+                    updateStats();
+                }
+            }
+        }
+
+        private class cancelEdit implements ActionListener {
+            public void actionPerformed(ActionEvent evt) {
+                int i = ((BetterButton) evt.getSource()).getId();
+                upgradeName[i].setText(upgrades.get(i).getName());
+                upgradeName[i].setEditable(false);
+                upgradePrice[i].setText(upgrades.get(i).getFormattedPrice());
+                upgradePrice[i].setEditable(false);
+
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.insets = new Insets(5, 2, 5, 2);
+                gbc.gridy = (i+2);
+
+                gbc.gridx = 6;
+                add(buyUpgrade[i], gbc);
+                gbc.gridx++;
+                add(editUpgrade[i], gbc);
+                gbc.gridx++;
+                add(delUpgrade[i], gbc);
+
+                remove(cancelEdit[i]);
+                remove(applyEdit[i]);
+                pack();
+            }
+        }
+
+        private void addClosingListener() {
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    listUpgradeGUI = null;
+                }
+            });
+        }
+    }
+
+
+    // NumericTextField for edit upgrade and add upgrade
+    public class NumericTextField extends JTextField {
+        private DecimalFormat formatter;
+        private final String GUI;
+
+        public NumericTextField(String GUI) {
+            super();
+            this.GUI = GUI;
+
+            formatter = new DecimalFormat("#,###");
+            formatter.setGroupingSize(3);
+            formatter.setParseIntegerOnly(true);
+
+            addKeyListener(new KeyListener() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    char c = e.getKeyChar();
+                    if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+                        e.consume();
+                    }
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    formatText();
+                }
+            });
+        }
+
+        private void formatText() {
+            try {
+                String text = getText().replaceAll("\\s", "");
+                long value = formatter.parse(text).longValue();
+                String formattedText = formatter.format(value);
+                setText(formattedText);
+                if(GUI.equals("addUpgrade"))
+                    addUpgradeGUI.updateStats();
+            } catch (ParseException e) {}
         }
     }
 }

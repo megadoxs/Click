@@ -89,13 +89,17 @@ public class Main {
                 line = inputFile.nextLine().split("\\|");
                 if (line[1].equals("50% group")){
                     upgrades.add(new Upgrade(line[0], line[1], line[2], Building.getGroup(Buildings, line[2], true), Integer.parseInt(line[3])));
-                }else
+                }
+                else if (line[1].equals("10% group")){
+                    upgrades.add(new Upgrade(line[0], line[1], line[2], Building.getGroup(Buildings, line[2], false), Integer.parseInt(line[3])));
+                }
+                else
                     upgrades.add(new Upgrade(line[0], line[1], Building.getBuildingByName(Buildings, line[2]).getBuilding(), Integer.parseInt(line[3])));
             }
             inputFile.close();
         }
         System.out.println();
-        GUI clicker = new GUI(Buildings, upgrades);
+        new GUI(Buildings, upgrades);
     }
 }
 
