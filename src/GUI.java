@@ -979,7 +979,8 @@ public class GUI extends JFrame{
 
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    formatText();
+                    if(!(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT))
+                        formatText();
                 }
             });
         }
