@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -11,7 +9,7 @@ import java.util.Scanner;
 
 public class GUI extends JFrame{
     private final Building[] buildings;
-    private final String[] groups10 = new String[]{"mineur", "fermier", "alchimiste"};
+    private final String[] groups10 = new String[]{"miner", "farmer", "hunter", "alchemist"};
     private final String[] groups50 = new String[]{"humanoide", "gelé", "eau", "foret"};
     private ArrayList<Upgrade> upgrades;
     private JTextField[] levels;
@@ -22,10 +20,15 @@ public class GUI extends JFrame{
 
     private static listUpgradeGUI listUpgradeGUI;
 
+    private final Font big = new Font("Dialog", Font.PLAIN, 20 );
+
     public GUI(Building[] buildings, ArrayList<Upgrade> upgrades){
         this.buildings = buildings;
         this.upgrades = upgrades;
         setGUI();
+
+        //temp
+        new BuildingsUpgradeGUI();
     }
 
     public GUI(Building[] buildings) throws HeadlessException {
@@ -224,9 +227,11 @@ public class GUI extends JFrame{
         GUI.this.prod[((BetterButton) evt.getSource()).getId()].setText(GUI.this.buildings[((BetterButton) evt.getSource()).getId()].getFormattedProduction());
 
         //updates next building
-        GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].calculateUnitProduction();
-        GUI.this.unitprod[((BetterButton) evt.getSource()).getId()+1].setText(GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].getFormattedUnitProduction());
-        GUI.this.prod[((BetterButton) evt.getSource()).getId()+1].setText(GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].getFormattedProduction());
+        if (((BetterButton) evt.getSource()).getId() < GUI.this.buildings.length-1){
+            GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].calculateUnitProduction();
+            GUI.this.unitprod[((BetterButton) evt.getSource()).getId()+1].setText(GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].getFormattedUnitProduction());
+            GUI.this.prod[((BetterButton) evt.getSource()).getId()+1].setText(GUI.this.buildings[((BetterButton) evt.getSource()).getId()+1].getFormattedProduction());
+        }
 
         updateStats();
         GUI.this.pack();
@@ -298,9 +303,12 @@ public class GUI extends JFrame{
                     updateBuildings(evt);
                 }
                 Upgrade.delUpgrade(upgrades, upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()));
-                listUpgradeGUI.updateUpgrades();
+                updateStats();
+                if (GUI.listUpgradeGUI != null)
+                    listUpgradeGUI.updateUpgrades();
             }
-            addUpgradeGUI.updateStats();
+            if (addUpgradeGUI != null)
+                addUpgradeGUI.updateStats();
         }
     }
 
@@ -347,7 +355,17 @@ public class GUI extends JFrame{
                 } catch (FileNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
-
+                try {
+                    PrintWriter outputFile2 = new PrintWriter("./data/global.txt");
+                    outputFile2.println(buildings[0].getGlobalUpgrade());
+                    outputFile2.println(Building.getGroup(buildings, "miner", false)[0].getJobLevel());
+                    outputFile2.println(Building.getGroup(buildings, "farmer", false)[0].getJobLevel());
+                    outputFile2.println(Building.getGroup(buildings, "hunter", false)[0].getJobLevel());
+                    outputFile2.print(Building.getGroup(buildings, "alchemist", false)[0].getJobLevel());
+                    outputFile2.close();
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
     }
@@ -411,12 +429,14 @@ public class GUI extends JFrame{
             selectType.addItem("1% per previous building");
             selectType.addItem("10% group");
             selectType.addItem("50% group");
+            selectType.addItem("Global");
             selectType.setSelectedItem(null);
             add(selectType, gbc);
 
 
             gbc.gridy++;
             selectTarget = new JComboBox<>();
+            selectTarget.setEnabled(false);
             add(selectTarget, gbc);
 
             gbc.gridy++;
@@ -490,31 +510,14 @@ public class GUI extends JFrame{
                 }
             }
 
-            DocumentListener textFieldListener = new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    updateStats();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    updateStats();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent e) {}
-            };
-
             updateUpgrade updateUpgradeListener = new updateUpgrade();
-            enterName.getDocument().addDocumentListener(textFieldListener);
             selectType.addActionListener(updateUpgradeListener);
-            selectTarget.addActionListener(updateUpgradeListener);
-
 
             selectType.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
+                    selectTarget.removeActionListener(updateUpgradeListener);
+                    selectTarget.removeAllItems();
                     if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("10% group")){
-                        selectTarget.removeAllItems();
                         for (int i = 0; i < GUI.this.groups10.length; i++){
                             if(!Building.getGroup(buildings, GUI.this.groups10[i], false)[0].hasUpgrade("10% group", GUI.this.groups10[i]) && !Upgrade.upgradeExist(GUI.this.upgrades, GUI.this.groups10[i], selectType.getSelectedItem().toString()))
                                 selectTarget.addItem(GUI.this.groups10[i]);
@@ -522,7 +525,6 @@ public class GUI extends JFrame{
                         selectTarget.setSelectedItem(null);
                     }
                     else if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("50% group")){
-                        selectTarget.removeAllItems();
                         for (int i = 0; i < GUI.this.groups50.length; i++){
                             if(!Building.getGroup(buildings, GUI.this.groups50[i], true)[0].hasUpgrade("50% group", GUI.this.groups50[i]) && !Upgrade.upgradeExist(GUI.this.upgrades, GUI.this.groups50[i], selectType.getSelectedItem().toString()))
                                 selectTarget.addItem(GUI.this.groups50[i]);
@@ -530,24 +532,37 @@ public class GUI extends JFrame{
                         selectTarget.setSelectedItem(null);
                     }
                     else if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("200%")){
-                        selectTarget.removeAllItems();
                         for (int i = 0; i < GUI.this.buildings.length; i++){
                             if(GUI.this.buildings[i].getLevel() > 0 && !GUI.this.buildings[i].hasUpgrade("200%") && GUI.this.buildings[i].hasUpgrade("100%") && !Upgrade.upgradeExist(GUI.this.upgrades, buildings[i].getName(), selectType.getSelectedItem().toString()))
                                 selectTarget.addItem(GUI.this.buildings[i].getName());
                         }
                         selectTarget.setSelectedItem(null);
                     }
+                    else if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("Job")){
+                        for (int i = 0; i < GUI.this.groups10.length; i++){
+                            if(!Building.getGroup(buildings, GUI.this.groups10[i], false)[0].hasUpgrade("Job", GUI.this.groups10[i]) && !Upgrade.upgradeExist(GUI.this.upgrades, GUI.this.groups10[i], selectType.getSelectedItem().toString()))
+                                selectTarget.addItem(GUI.this.groups10[i]);
+                        }
+                        selectTarget.setSelectedItem(null);
+                    }
+                    else if (selectType.getSelectedItem() != null && selectType.getSelectedItem().toString().equals("Global") && buildings[0].getGlobalUpgrade() <= 10 && !Upgrade.upgradeExist(GUI.this.upgrades, ("Global " + (buildings[0].getGlobalUpgrade()+1) + "0%"), selectType.getSelectedItem().toString())){
+                        selectTarget.addItem("Global " + (buildings[0].getGlobalUpgrade()+1) + "0%");
+                        selectTarget.setSelectedItem(null);
+                    }
                     else if (selectType.getSelectedItem() != null) {
-                        selectTarget.removeAllItems();
                         for (int i = 0; i < GUI.this.buildings.length; i++){
                             if(GUI.this.buildings[i].getLevel() > 0 && !GUI.this.buildings[i].hasUpgrade(selectType.getSelectedItem().toString()) && !Upgrade.upgradeExist(GUI.this.upgrades, buildings[i].getName(), selectType.getSelectedItem().toString()))
                                 selectTarget.addItem(GUI.this.buildings[i].getName());
                         }
                         selectTarget.setSelectedItem(null);
                     }
+                    if(selectTarget.getModel().getSize() > 1)
+                        selectTarget.setEnabled(true);
                     else {
-                        selectTarget.removeAllItems();
+                        selectTarget.setSelectedItem(selectTarget.getModel().getElementAt(0));
+                        selectTarget.setEnabled(false);
                     }
+                    selectTarget.addActionListener(updateUpgradeListener);
                 }
             });
 
@@ -565,8 +580,12 @@ public class GUI extends JFrame{
                                 GUI.this.upgrades.add(new Upgrade(enterName.getText(), selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), true), Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", ""))));
                                 outputFile.print(selectTarget.getSelectedItem().toString() + "|");
                             }
-                            else if(selectType.getSelectedItem().toString().equals("10% group")){
+                            else if(selectType.getSelectedItem().toString().equals("10% group") || selectType.getSelectedItem().toString().equals("Job")){
                                 GUI.this.upgrades.add(new Upgrade(enterName.getText(), selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), false), Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", ""))));
+                                outputFile.print(selectTarget.getSelectedItem().toString() + "|");
+                            }
+                            else if(selectType.getSelectedItem().toString().equals("Global")){
+                                GUI.this.upgrades.add(new Upgrade(enterName.getText(), selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), buildings, Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", ""))));
                                 outputFile.print(selectTarget.getSelectedItem().toString() + "|");
                             }
                             else {
@@ -583,7 +602,8 @@ public class GUI extends JFrame{
                         enterPrice.setText("");
                         selectType.setSelectedItem(null);
                         GUI.this.updateStats();
-                        listUpgradeGUI.updateUpgrades();
+                        if (GUI.listUpgradeGUI != null)
+                            listUpgradeGUI.updateUpgrades();
                     }
                 }
             });
@@ -604,9 +624,13 @@ public class GUI extends JFrame{
                     AddUpgradeGUI.this.prodBoostValue.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), true), 0)).getFormattedUpgradeBoost());
                     AddUpgradeGUI.this.newTotalProd.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), true), 0)).getFormattedNewProd(GUI.this.buildings));
                 }
-                else if(selectType.getSelectedItem().toString().equals("10% group")){
+                else if(selectType.getSelectedItem().toString().equals("10% group") || selectType.getSelectedItem().toString().equals("Job")){
                     AddUpgradeGUI.this.prodBoostValue.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), false), 0)).getFormattedUpgradeBoost());
                     AddUpgradeGUI.this.newTotalProd.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), false), 0)).getFormattedNewProd(GUI.this.buildings));
+                }
+                else if(selectType.getSelectedItem().toString().equals("Global")){
+                    AddUpgradeGUI.this.prodBoostValue.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), GUI.this.buildings, 0)).getFormattedUpgradeBoost());
+                    AddUpgradeGUI.this.newTotalProd.setText((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), GUI.this.buildings, 0)).getFormattedNewProd(GUI.this.buildings));
                 }
                 else {
                     AddUpgradeGUI.this.prodBoostValue.setText(new Upgrade("", selectType.getSelectedItem().toString(), Building.getBuildingByName(GUI.this.buildings, selectTarget.getSelectedItem().toString()).getBuilding(), 0).getFormattedUpgradeBoost());
@@ -628,8 +652,11 @@ public class GUI extends JFrame{
                 if(selectType.getSelectedItem().toString().equals("50% group")){
                     AddUpgradeGUI.this.isBestPurchase.setText(Boolean.toString((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), true), Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", "")))).isBestPurchase(GUI.this.upgrades, GUI.this.buildings)));
                 }
-                else if(selectType.getSelectedItem().toString().equals("10% group")){
+                else if(selectType.getSelectedItem().toString().equals("10% group") || selectType.getSelectedItem().toString().equals("Job")){
                     AddUpgradeGUI.this.isBestPurchase.setText(Boolean.toString((new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), Building.getGroup(GUI.this.buildings, selectTarget.getSelectedItem().toString(), false), Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", "")))).isBestPurchase(GUI.this.upgrades, GUI.this.buildings)));
+                }
+                else if(selectType.getSelectedItem().toString().equals("Global")){
+                    AddUpgradeGUI.this.isBestPurchase.setText(Boolean.toString(new Upgrade("", selectType.getSelectedItem().toString(), selectTarget.getSelectedItem().toString(), GUI.this.buildings, Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", ""))).isBestPurchase(GUI.this.upgrades, GUI.this.buildings)));
                 }
                 else {
                     AddUpgradeGUI.this.isBestPurchase.setText(Boolean.toString(new Upgrade("", selectType.getSelectedItem().toString(), Building.getBuildingByName(GUI.this.buildings, selectTarget.getSelectedItem().toString()).getBuilding(), Integer.parseInt(enterPrice.getText().replaceAll("[^0-9]", ""))).isBestPurchase(GUI.this.upgrades, GUI.this.buildings)));
@@ -866,7 +893,8 @@ public class GUI extends JFrame{
                 }
                 Upgrade.delUpgrade(upgrades, upgrades.get(id));
                 updateUpgrades();
-                addUpgradeGUI.updateStats();
+                if (addUpgradeGUI != null)
+                    addUpgradeGUI.updateStats();
             }
         }
 
@@ -907,6 +935,7 @@ public class GUI extends JFrame{
             public void actionPerformed(ActionEvent evt) {
                 Upgrade.delUpgrade(upgrades, upgrades.get(((BetterButton) evt.getSource()).getId()));
                 updateUpgrades();
+                updateStats();
             }
         }
 
@@ -974,10 +1003,205 @@ public class GUI extends JFrame{
         }
     }
 
+    private class BuildingsUpgradeGUI extends JFrame{
+
+        // per building
+        JLabel[] name = new JLabel[buildings.length];
+        JCheckBox[] doubleProd;
+        JCheckBox[] tripleProd;
+        JCheckBox[] sameBuilding;
+        JCheckBox[] previousBuilding;
+
+        // group10
+        JCheckBox[] group10 = new JCheckBox[GUI.this.groups10.length];
+
+        // group50
+        JCheckBox[] group50 = new JCheckBox[GUI.this.groups50.length];
+
+        // job
+        JCheckBox[] job = new JCheckBox[GUI.this.groups10.length];
+
+        // global
+        JTextField globalLevel;
+
+        public BuildingsUpgradeGUI() throws HeadlessException {
+            setTitle("Buildings's Upgrades");
+            setVisible(true);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            addClosingListener();
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(3, 5, 3, 5);
+
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            JLabel buildingUpgrade = new JLabel("Buildings's Upgrades");
+            buildingUpgrade.setFont(big);
+            add(buildingUpgrade, gbc);
+            gbc.gridy++;
+            JLabel buildings = new JLabel("Buildings");
+            add(buildings, gbc);
+
+            gbc.gridy++;
+            for (int i = 0; i < GUI.this.buildings.length; i++){
+                name[i] = new JLabel(GUI.this.buildings[i].getName());
+                add(name[i], gbc);
+                gbc.gridy++;
+            }
+            doubleProd = new JCheckBox[GUI.this.buildings.length];
+            tripleProd = new JCheckBox[GUI.this.buildings.length];
+            sameBuilding = new JCheckBox[GUI.this.buildings.length];
+            previousBuilding = new JCheckBox[GUI.this.buildings.length];
+
+            gbc.gridy = 1;
+            gbc.gridx = 1;
+
+            add(new JLabel("100%"), gbc);
+            gbc.gridx++;
+            add(new JLabel("200%"), gbc);
+            gbc.gridx++;
+            add(new JLabel("1% per same Building"), gbc);
+            gbc.gridx++;
+            add(new JLabel("1% per previous Building"), gbc);
+
+            gbc.gridx = 5;
+            gbc.gridy = 0;
+
+            gbc.insets = new Insets(3, 30, 3, 5);
+            JLabel global = new JLabel("Global Upgrades");
+            global.setFont(big);
+            gbc.gridwidth = 3;
+            add(global, gbc);
+            gbc.gridy++;
+            gbc.gridwidth = 1;
+
+            gbc.insets = new Insets(3, 5, 3, 5);
+            gbc.gridx++;
+            JLabel[] group50names = new JLabel[GUI.this.groups50.length];
+            for (int i = 0; i < GUI.this.groups50.length; i++){
+                group50names[i] = new JLabel(GUI.this.groups50[i]);
+                group50names[i].setHorizontalAlignment(JTextField.CENTER);
+                add(group50names[i], gbc);
+                gbc.gridx++;
+            }
+            gbc.gridy++;
+
+            gbc.insets = new Insets(3, 30, 3, 5);
+            gbc.gridx = 5;
+            JLabel group50 = new JLabel("group 50%");
+            add(group50, gbc);
+            gbc.gridy++;
+            gbc.gridy++;
+            gbc.gridy++;
+
+            JLabel job = new JLabel("job");
+            job.setHorizontalAlignment(JTextField.CENTER);
+            add(job, gbc);
+            gbc.gridy++;
+
+            JLabel group10 = new JLabel("group 10%");
+            add(group10, gbc);
+
+
+            gbc.gridy++;
+            gbc.gridy++;
+            JLabel globalUP = new JLabel("global level");
+            add(globalUP, gbc);
+
+
+            gbc.insets = new Insets(3, 5, 3, 5);
+            gbc.gridx = 6;
+            gbc.gridy = 4;
+            JLabel[] group10names = new JLabel[GUI.this.groups10.length];
+            for (int i = 0; i < GUI.this.groups10.length; i++){
+                group10names[i] = new JLabel(GUI.this.groups10[i]);
+                group10names[i].setHorizontalAlignment(JTextField.CENTER);
+                add(group10names[i], gbc);
+                gbc.gridx++;
+            }
+
+            updateBuildingUpgrades();
+
+            pack();
+        }
+
+        public void updateBuildingUpgrades(){
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(3, 5, 3, 5);
+
+            gbc.gridy = 2;
+            for (int i = 0; i < buildings.length; i++){
+                gbc.gridx = 1;
+
+                doubleProd[i] = new JCheckBox((Icon) null, buildings[i].isDoubleUpgrade());
+                doubleProd[i].setEnabled(false);
+                doubleProd[i].setHorizontalAlignment(JTextField.CENTER);
+                add(doubleProd[i], gbc);
+                gbc.gridx++;
+
+                tripleProd[i] = new JCheckBox((Icon) null, buildings[i].isTripleUpgrade());
+                tripleProd[i].setEnabled(false);
+                tripleProd[i].setHorizontalAlignment(JTextField.CENTER);
+                add(tripleProd[i], gbc);
+                gbc.gridx++;
+
+                sameBuilding[i] = new JCheckBox((Icon) null, buildings[i].isSameBuildingUpgrade());
+                sameBuilding[i].setEnabled(false);
+                sameBuilding[i].setHorizontalAlignment(JTextField.CENTER);
+                add(sameBuilding[i], gbc);
+                gbc.gridx++;
+
+                if (buildings[i].getPreviousBuilding() != null){
+                    previousBuilding[i] = new JCheckBox((Icon) null, buildings[i].isPreviousBuildingUpgrade());
+                    previousBuilding[i].setEnabled(false);
+                    previousBuilding[i].setHorizontalAlignment(JTextField.CENTER);
+                    add(previousBuilding[i], gbc);
+                }
+
+                gbc.gridy++;
+            }
+            gbc.gridy = 2;
+            gbc.gridx = 6;
+
+            for (int i = 0; i < GUI.this.groups50.length; i++){
+                group50[i] = new JCheckBox((Icon) null, Building.getGroup(GUI.this.buildings, GUI.this.groups50[i], true)[0].hasUpgrade("50% group", GUI.this.groups50[i]));
+                group50[i].setEnabled(false);
+                group50[i].setHorizontalAlignment(JTextField.CENTER);
+                add(group50[i], gbc);
+                gbc.gridx++;
+            }
+
+            gbc.gridy = 5;
+            gbc.gridx = 5;
+            for (int i = 0; i < GUI.this.groups10.length; i++){
+                gbc.gridx++;
+                job[i] = new JCheckBox((Icon) null, Building.getGroup(GUI.this.buildings, GUI.this.groups10[i], false)[0].isJobUpgrade());
+                group10[i] = new JCheckBox((Icon) null, Building.getGroup(GUI.this.buildings, GUI.this.groups10[i], false)[0].isGroupUpgrade());
+                job[i].setEnabled(false);
+                group10[i].setEnabled(false);
+                job[i].setHorizontalAlignment(JTextField.CENTER);
+                group10[i].setHorizontalAlignment(JTextField.CENTER);
+
+                add(job[i], gbc);
+                gbc.gridy++;
+
+                add(group10[i], gbc);
+                gbc.gridy--;
+            }
+
+            gbc.gridy = 8;
+            gbc.gridx = 6;
+            globalLevel = new JTextField(Integer.toString(GUI.this.buildings[0].getGlobalUpgrade()));
+            globalLevel.setEditable(false);
+            add(globalLevel, gbc);
+        }
+    }
 
     // NumericTextField for edit upgrade and add upgrade
     public class NumericTextField extends JTextField {
-        private DecimalFormat formatter;
+        private final DecimalFormat formatter;
         private final String GUI;
 
         public NumericTextField(String GUI) {

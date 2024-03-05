@@ -122,6 +122,11 @@ public class Upgrade {
                     this.group[i].addGroupUpgrade50(this.groupName);
                 }
                 break;
+            case "Global":
+                for (int i = 0; i < this.group.length; i++){
+                    this.group[i].setGlobalUpgrade(this.group[i].getGlobalUpgrade()+1);
+                }
+                break;
         }
     }
 
@@ -153,6 +158,14 @@ public class Upgrade {
                 group[i] = new Building(this.group[i]);
             }
             switch (this.type){
+                case "Job":
+                    for (int i = 0; i < this.group.length; i++){
+                        group[i].setJobUpgrade(true);
+                    }
+                    break;
+                case "Global":
+                    Building.setGlobalUpgradeLevel(group,group[0].getGlobalUpgrade()+1);
+                    break;
                 case "10% group":
                     for (int i = 0; i < this.group.length; i++){
                         group[i].setGroupUpgrade(true);
@@ -172,9 +185,6 @@ public class Upgrade {
         }else {
             Building building = new Building(this.building);
             switch (type){
-                case "Job":
-                    building.setJobUpgrade(true);
-                    break;
                 case "100%":
                     building.setDoubleUpgrade(true);
                     break;
