@@ -2,15 +2,15 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Building {
-    private String name;
+    private final String name;
     private String[] groups;
     private String group;
     private int jobLevel;
     private int level;
     private int globalUpgrade;
-    private double defaultProduction;
+    private final double defaultProduction;
     private double unitProduction;
-    private double defaultPrice;
+    private final double defaultPrice;
     private Building previousBuilding;
     private boolean jobUpgrade; //unknown;
     private boolean doubleUpgrade; //100%
@@ -20,6 +20,9 @@ public class Building {
     private boolean groupUpgrade; // 10% group
     private String groupUpgrade10;
     private ArrayList<String> groupUpgrade50 = new ArrayList<>(); // 50% groups upgrades
+
+    private static final DecimalFormat smallProd = new DecimalFormat("#0.00");
+    private static final DecimalFormat bigProd = new DecimalFormat("#,#00");
 
     public Building(String name, String group, String[] groups, double defaultProduction, double defaultPrice, Building previousBuilding) { // constructor with all upgrades
         this.name = name;
@@ -160,13 +163,7 @@ public class Building {
         return defaultProduction;
     }
 
-    public void setDefaultProduction(double defaultProduction) {
-        this.defaultProduction = defaultProduction;
-    }
-
     public String getFormattedUnitProduction() {
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,###,#00");
         if (this.unitProduction < 10)
             return smallProd.format(this.unitProduction);
         else
@@ -181,16 +178,8 @@ public class Building {
         return defaultPrice;
     }
 
-    public void setDefaultPrice(double defaultPrice) {
-        this.defaultPrice = defaultPrice;
-    }
-
     public Building getPreviousBuilding() {
         return previousBuilding;
-    }
-
-    public void setPreviousBuilding(Building previousBuilding) {
-        this.previousBuilding = previousBuilding;
     }
 
     public boolean isDoubleUpgrade() {
@@ -247,8 +236,6 @@ public class Building {
     }
 
     public String getFormattedUpgradePrice(){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         if (this.defaultPrice*Math.pow(1.1, (this.getLevel() + 1)) < 10)
             return smallProd.format(this.defaultPrice*Math.pow(1.1, (this.getLevel())));
         else
@@ -256,8 +243,6 @@ public class Building {
     }
 
     public String getFormattedProduction(){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         if (this.unitProduction*this.level < 10)
             return smallProd.format(this.unitProduction*this.level);
         else
@@ -300,8 +285,6 @@ public class Building {
     }
 
     public static String getFormattedTotalProd(Building[] buildings){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,###,###,###,#00");
         double total = 0;
         for (int i = 0; i < buildings.length; i++){
             total += buildings[i].getProduction();
@@ -337,8 +320,6 @@ public class Building {
     }
 
     public static String getFormattedUpgradeBoost(Building building){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         Building newBuilding = new Building(building);
         newBuilding.addLevel();
         newBuilding.calculateUnitProduction();
@@ -356,8 +337,6 @@ public class Building {
     }
 
     public static String getFormattedNewProd(Building[] buildings, Building building){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         double New = getTotalProd(buildings) + getUpgradeBoost(building);
         if (New < 10)
             return smallProd.format(New);

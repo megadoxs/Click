@@ -51,7 +51,7 @@ public class Main {
 
         //makes the dir to store the data txt files
         Path path = Paths.get("./data");
-        if (!Files.exists(path) && Files.isDirectory(path)) {
+        if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
             } catch (IOException ignored) {}
@@ -60,11 +60,6 @@ public class Main {
         // check in the file for the values
         File file = new File("./data/buildings.txt");
         File file3 = new File("./data/global.txt");
-        if (file3.exists()){
-            Scanner inputGlobal = new Scanner(file3);
-
-            inputGlobal.close();
-        }
         if (file.exists() && file3.exists()){
             Scanner inputFile = new Scanner(file);
             Scanner inputGlobal = new Scanner(file3);

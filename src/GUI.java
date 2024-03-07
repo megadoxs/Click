@@ -12,27 +12,68 @@ public class GUI extends JFrame{
     private final String[] groups10 = new String[]{"miner", "farmer", "hunter", "alchemist"};
     private final String[] groups50 = new String[]{"humanoide", "gelé", "eau", "foret"};
     private ArrayList<Upgrade> upgrades;
+
+    // utility
+    private static final Insets noMargin = new Insets(0,0,0,0);
+    private static final Insets margin5 = new Insets(5,5,5,5);
+    private static final Insets margin30L = new Insets(5,30,5,5);
+    private final Font big = new Font("Dialog", Font.PLAIN, 20 );
+
+
     private JTextField[] levels;
     private JTextField[] prod;
     private JTextField[] unitprod;
     private JLabel[] statsValue;
+
+    // event listener
+
+    private final ActionListener addUpgradeListener = new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+            if (addUpgradeGUI == null) {
+                addUpgradeGUI = new AddUpgradeGUI();
+            } else {
+                addUpgradeGUI.toFront();
+            }
+        }
+    };
+
+    private final ActionListener upgradeListListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (listUpgradeGUI == null) {
+                listUpgradeGUI = new listUpgradeGUI();
+            } else {
+                listUpgradeGUI.toFront();
+            }
+        }
+    };
+
+    private final ActionListener buildingsUpgradesListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (buildingsUpgradesGUI == null) {
+                buildingsUpgradesGUI = new BuildingsUpgradeGUI();
+            } else {
+                buildingsUpgradesGUI.toFront();
+            }
+        }
+    };
+
+    // common items
+    private final SharedButton addUpgrade = new SharedButton("Add Upgrade", noMargin, addUpgradeListener);
+    private final SharedButton upgradeList = new SharedButton("Upgrade List", noMargin, upgradeListListener);
+    private final SharedButton buildingsUpgrades = new SharedButton("See Buildings's Upgrades", noMargin, buildingsUpgradesListener);
+
+    private final SharedLabel options = new SharedLabel("Options", big);
+
+    // other GUI
     private static AddUpgradeGUI addUpgradeGUI;
-
     private static listUpgradeGUI listUpgradeGUI;
-
-    private final Font big = new Font("Dialog", Font.PLAIN, 20 );
+    private static BuildingsUpgradeGUI buildingsUpgradesGUI;
 
     public GUI(Building[] buildings, ArrayList<Upgrade> upgrades){
         this.buildings = buildings;
         this.upgrades = upgrades;
-        setGUI();
-
-        //temp
-        new BuildingsUpgradeGUI();
-    }
-
-    public GUI(Building[] buildings) throws HeadlessException {
-        this.buildings = buildings;
         setGUI();
     }
 
@@ -56,7 +97,7 @@ public class GUI extends JFrame{
         header[3] = new JLabel("Building Prod/s");
         header[1].setHorizontalAlignment(JTextField.CENTER);
         for (int j = 0; j < header.length; j++){
-            header[j].setFont(new Font(header[j].getFont().getName(), Font.PLAIN, 20));
+            header[j].setFont(big);
             gbc.gridy = 0;
             if (j > 2)
                 gbc.gridx = (j+2);
@@ -98,8 +139,8 @@ public class GUI extends JFrame{
             //button
             addButtons[i] = new BetterButton("+1", i);
             delButtons[i] = new BetterButton("-1", i);
-            addButtons[i].setMargin(new Insets(0, 0, 0, 0));
-            delButtons[i].setMargin(new Insets(0, 0, 0, 0));
+            addButtons[i].setMargin(noMargin);
+            delButtons[i].setMargin(noMargin);
             addButtons[i].setPreferredSize(new Dimension(20, 20));
             delButtons[i].setPreferredSize(new Dimension(20, 20));
 
@@ -127,7 +168,7 @@ public class GUI extends JFrame{
 
         //stats
         JLabel stats = new JLabel("Stats");
-        stats.setFont(new Font(stats.getFont().getName(), Font.PLAIN, 20));
+        stats.setFont(big);
         gbc.insets = new Insets(2, 30, 2, 5);
         gbc.gridx = 6;
         gbc.gridy = 0;
@@ -159,39 +200,27 @@ public class GUI extends JFrame{
         gbc.insets = new Insets(2, 30, 2, 5);
         gbc.gridx = 6;
         gbc.gridy = 6;
-        JLabel options = new JLabel("Options");
-        options.setFont(new Font(options.getFont().getName(), Font.PLAIN, 20));
-        add(options, gbc);
+        add(options.clone(), gbc);
 
         gbc.gridy++;
         purchaseRecommended purchaseListener = new purchaseRecommended();
         BetterButton purchaseRecommended = new BetterButton("Purchase Recommended");
-        purchaseRecommended.setMargin(new Insets(0, 0, 0, 0));
+        purchaseRecommended.setMargin(noMargin);
         purchaseRecommended.addActionListener(purchaseListener);
         add(purchaseRecommended, gbc);
 
         gbc.gridy++;
-        addUpgrade addUpgradeListener = new addUpgrade();
-        JButton addUpgrade = new JButton("Add Upgrade");
-        addUpgrade.setMargin(new Insets(0, 0, 0, 0));
-        addUpgrade.addActionListener(addUpgradeListener);
-        add(addUpgrade, gbc);
+        add(GUI.this.addUpgrade.clone(), gbc);
 
         gbc.gridy++;
-        listUpgrade listUpgradeListener = new listUpgrade();
-        JButton upgradeList = new JButton("Upgrade List");
-        upgradeList.setMargin(new Insets(0, 0, 0, 0));
-        upgradeList.addActionListener(listUpgradeListener);
-        add(upgradeList, gbc);
+        add(GUI.this.upgradeList.clone(), gbc);
 
         gbc.gridy++;
-        JButton showbuildingUpgrades = new JButton("See Buildings's Upgrades");
-        showbuildingUpgrades.setMargin(new Insets(0, 0, 0, 0));
-        add(showbuildingUpgrades, gbc);
+        add(GUI.this.buildingsUpgrades.clone(), gbc);
 
         gbc.gridy++;
         JButton reset = new JButton("Reset Data");
-        reset.setMargin(new Insets(0, 0, 0, 0));
+        reset.setMargin(noMargin);
         add(reset, gbc);
 
         //pack
@@ -302,33 +331,13 @@ public class GUI extends JFrame{
                     ((BetterButton) evt.getSource()).setId(Building.getBuildingByName(buildings, upgrades.get(id).getBuilding().getName()).getIndex());
                     updateBuildings(evt);
                 }
-                Upgrade.delUpgrade(upgrades, upgrades.get(Upgrade.getBestPurchase(upgrades).getIndex()));
+                Upgrade.delUpgrade(upgrades, upgrades.get(id));
                 updateStats();
                 if (GUI.listUpgradeGUI != null)
                     listUpgradeGUI.updateUpgrades();
             }
             if (addUpgradeGUI != null)
                 addUpgradeGUI.updateStats();
-        }
-    }
-
-    private class addUpgrade implements ActionListener {
-        public void actionPerformed(ActionEvent evt) {
-            if (addUpgradeGUI == null) {
-                addUpgradeGUI = new AddUpgradeGUI();
-            } else {
-                addUpgradeGUI.toFront();
-            }
-        }
-    }
-
-    private class listUpgrade implements ActionListener {
-        public void actionPerformed(ActionEvent evt) {
-            if (listUpgradeGUI == null) {
-                listUpgradeGUI = new listUpgradeGUI();
-            } else {
-                listUpgradeGUI.toFront();
-            }
         }
     }
     private void addClosingListener(){
@@ -388,14 +397,14 @@ public class GUI extends JFrame{
             setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = margin5;
 
             //page body
             gbc.gridx = 0;
             gbc.gridy = 0;
             gbc.gridwidth = 2;
             JLabel addUpgrade = new JLabel("New Upgrade");
-            addUpgrade.setFont(new Font(addUpgrade.getFont().getName(), Font.PLAIN, 20));
+            addUpgrade.setFont(big);
             add(addUpgrade, gbc);
             gbc.gridwidth = 1;
 
@@ -451,11 +460,11 @@ public class GUI extends JFrame{
             add(createUpgrade, gbc);
 
             //stats
-            gbc.insets = new Insets(5, 30, 5, 5);
+            gbc.insets = margin30L;
             gbc.gridy = 0;
             gbc.gridx = 2;
             JLabel stats = new JLabel("Stats");
-            stats.setFont(new Font(addUpgrade.getFont().getName(), Font.PLAIN, 20));
+            stats.setFont(big);
             add(stats, gbc);
             gbc.gridwidth = 1;
 
@@ -476,30 +485,22 @@ public class GUI extends JFrame{
             add(isBestPurchase, gbc);
 
 
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = margin5;
             gbc.gridy = 1;
             gbc.gridx = 3;
             JLabel totalProdValue = new JLabel(Building.getFormattedTotalProd(GUI.this.buildings));
             add(totalProdValue, gbc);
 
-            gbc.insets = new Insets(2, 30, 2, 5);
+            gbc.insets = margin30L;
             gbc.gridx = 4;
             gbc.gridy = 0;
-            JLabel options = new JLabel("Options");
-            options.setFont(new Font(options.getFont().getName(), Font.PLAIN, 20));
-            add(options, gbc);
+            add(options.clone(), gbc);
 
             gbc.gridy++;
-            listUpgrade listUpgradeListener = new listUpgrade();
-            JButton upgradeList = new JButton("Upgrade List");
-            upgradeList.addActionListener(listUpgradeListener);
-            upgradeList.setMargin(new Insets(0, 0, 0, 0));
-            add(upgradeList, gbc);
+            add(GUI.this.upgradeList.clone(), gbc);
 
             gbc.gridy++;
-            JButton showbuildingUpgrades = new JButton("See Buildings's Upgrades");
-            showbuildingUpgrades.setMargin(new Insets(0, 0, 0, 0));
-            add(showbuildingUpgrades, gbc);
+            add(GUI.this.buildingsUpgrades.clone(), gbc);
 
             //listeners
 
@@ -615,7 +616,7 @@ public class GUI extends JFrame{
         public void updateStats(){
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = margin5;
             gbc.gridy = 2;
             gbc.gridx = 3;
             // upgrade boost & New prod
@@ -704,14 +705,14 @@ public class GUI extends JFrame{
             setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = margin5;
 
             //page body
             gbc.gridx = 0;
             gbc.gridy = 0;
             gbc.gridwidth = 9;
             JLabel listUpgrade = new JLabel("Upgrade List");
-            listUpgrade.setFont(new Font(listUpgrade.getFont().getName(), Font.PLAIN, 20));
+            listUpgrade.setFont(big);
             add(listUpgrade, gbc);
             gbc.gridwidth = 1;
 
@@ -739,23 +740,15 @@ public class GUI extends JFrame{
             JLabel price = new JLabel("Price");
             add(price, gbc);
 
-            gbc.insets = new Insets(5, 30, 5, 5);
+            gbc.insets = margin30L;
             gbc.gridx = 9;
-            JLabel options = new JLabel("Options");
-            options.setFont(new Font(options.getFont().getName(), Font.PLAIN, 20));
-            add(options, gbc);
+            add(options.clone(), gbc);
 
             gbc.gridy++;
-            JButton addUpgrade = new JButton("Add Upgrade");
-            addUpgrade.setMargin(new Insets(0, 0, 0, 0));
-            addUpgrade addUpgradeListener = new addUpgrade();
-            addUpgrade.addActionListener(addUpgradeListener);
-            add(addUpgrade, gbc);
+            add(GUI.this.addUpgrade.clone(), gbc);
 
             gbc.gridy++;
-            JButton seeUpgrade = new JButton("See Building's upgrades");
-            seeUpgrade.setMargin(new Insets(0, 0, 0, 0));
-            add(seeUpgrade, gbc);
+            add(GUI.this.buildingsUpgrades.clone(), gbc);
 
             applyEdit = new BetterButton[GUI.this.buildings.length];
             cancelEdit = new BetterButton[GUI.this.buildings.length];
@@ -766,7 +759,7 @@ public class GUI extends JFrame{
         private void updateUpgrades(){
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.insets = margin5;
 
             if (upgradeNumber != null)
                 for (int i = 0; i < upgradeNumber.length; i++){
@@ -804,7 +797,7 @@ public class GUI extends JFrame{
             for (int i = 0; i < GUI.this.upgrades.size(); i++){
                 //start
                 gbc.gridx = 0;
-                gbc.insets = new Insets(5, 5, 5, 5);
+                gbc.insets = margin5;
 
                 //upgrade number
                 upgradeNumber[i] = new JLabel(String.valueOf(i+1));
@@ -849,7 +842,7 @@ public class GUI extends JFrame{
                 //delete button
                 gbc.insets = new Insets(5, 2, 5, 2);
                 delUpgrade[i] = new BetterButton("delete", i);
-                delUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
+                delUpgrade[i].setMargin(noMargin);
                 add(delUpgrade[i], gbc);
                 delUpgrade delUpgradeListener = new delUpgrade();
                 delUpgrade[i].addActionListener(delUpgradeListener);
@@ -857,7 +850,7 @@ public class GUI extends JFrame{
 
                 //apply button
                 editUpgrade[i] = new BetterButton("edit", i);
-                editUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
+                editUpgrade[i].setMargin(noMargin);
                 add(editUpgrade[i], gbc);
                 editUpgrade editUpgradeListener = new editUpgrade();
                 editUpgrade[i].addActionListener(editUpgradeListener);
@@ -865,7 +858,7 @@ public class GUI extends JFrame{
 
                 //apply button
                 buyUpgrade[i] = new BetterButton("buy", i);
-                buyUpgrade[i].setMargin(new Insets(0, 0, 0, 0));
+                buyUpgrade[i].setMargin(noMargin);
                 add(buyUpgrade[i], gbc);
                 buyUpgrade buyUpgradeListener = new buyUpgrade();
                 buyUpgrade[i].addActionListener(buyUpgradeListener);
@@ -915,14 +908,14 @@ public class GUI extends JFrame{
 
                 gbc.gridx = 6;
                 cancelEdit[id] = new BetterButton("Cancel", id);
-                cancelEdit[id].setMargin(new Insets(0, 0, 0, 0));
+                cancelEdit[id].setMargin(noMargin);
                 cancelEdit cancelEditListener = new cancelEdit();
                 cancelEdit[id].addActionListener(cancelEditListener);
                 add(cancelEdit[id], gbc);
 
                 gbc.gridx++;
                 applyEdit[id] = new BetterButton("Apply", id);
-                applyEdit[id].setMargin(new Insets(0, 0, 0, 0));
+                applyEdit[id].setMargin(noMargin);
                 applyEdit applyEditListener = new applyEdit();
                 applyEdit[id].addActionListener(applyEditListener);
                 add(applyEdit[id], gbc);
@@ -1197,10 +1190,56 @@ public class GUI extends JFrame{
             globalLevel.setEditable(false);
             add(globalLevel, gbc);
         }
+
+        private void addClosingListener() {
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    buildingsUpgradesGUI = null;
+                }
+            });
+        }
+    }
+
+    public static class SharedLabel extends JLabel implements Cloneable{
+        public SharedLabel(String text, Font font) {
+            super(text);
+            setFont(font);
+        }
+        public SharedLabel(){}
+
+        @Override
+        public SharedLabel clone() {
+            SharedLabel clone = new SharedLabel();
+            clone.setText(this.getText());
+            clone.setFont(this.getFont());
+            return clone;
+        }
+    }
+
+    public static class SharedButton extends JButton implements Cloneable{
+        public SharedButton(String text, Insets margin, ActionListener actionListener) {
+            super(text);
+            this.setMargin(margin);
+            this.addActionListener(actionListener);
+        }
+
+        public SharedButton(){}
+
+        @Override
+        public SharedButton clone() {
+            SharedButton clone = new SharedButton();
+            clone.setMargin(this.getMargin());
+            clone.setText(this.getText());
+            for (int i = 0; i < this.getActionListeners().length; i++){
+                clone.addActionListener(this.getActionListeners()[i]);
+            }
+            return clone;
+        }
     }
 
     // NumericTextField for edit upgrade and add upgrade
-    public class NumericTextField extends JTextField {
+    public static class NumericTextField extends JTextField {
         private final DecimalFormat formatter;
         private final String GUI;
 

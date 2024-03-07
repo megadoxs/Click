@@ -7,13 +7,15 @@ import java.util.Scanner;
 
 public class Upgrade {
     private String name;
-    private String type;
+    private final String type;
     private Building building;
     private Building[] group;
     private String groupName;
-
-    private boolean multiple;
+    private final boolean multiple;
     private int price;
+
+    private static final DecimalFormat smallProd = new DecimalFormat("#0.00");
+    private static final DecimalFormat bigProd = new DecimalFormat("#,#00");
 
     public Upgrade(String name, String type, Building building, int price) {
         this.name = name;
@@ -71,8 +73,6 @@ public class Upgrade {
     }
 
     public String getFormattedPrice(){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         if (this.price < 10)
             return smallProd.format(this.price);
         else
@@ -131,8 +131,6 @@ public class Upgrade {
     }
 
     public String getFormattedNewProd(Building[] buildings){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         double newProd = Building.getTotalProd(buildings) + getUpgradeBoost();
         if (newProd < 10)
             return smallProd.format(newProd);
@@ -141,8 +139,6 @@ public class Upgrade {
     }
 
     public String getFormattedUpgradeBoost(){
-        DecimalFormat smallProd = new DecimalFormat("#0.00");
-        DecimalFormat bigProd = new DecimalFormat("#,#00");
         double boost = getUpgradeBoost();
         if (boost < 10)
             return smallProd.format(boost);
@@ -240,10 +236,7 @@ public class Upgrade {
                 value = buildings[i].getUpgradeValue();
             }
         }
-        if (this.getUpgradeValue() > value)
-            return true;
-        else
-            return false;
+        return this.getUpgradeValue() > value;
     }
 
     public static void delUpgrade(ArrayList<Upgrade> upgrades, Upgrade upgrade){
