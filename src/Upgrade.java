@@ -97,9 +97,6 @@ public class Upgrade {
 
     public void applyUpgrade(){
         switch (this.type){
-            case "Job":
-                this.building.setJobUpgrade(true);
-                break;
             case "100%":
                 this.building.setDoubleUpgrade(true);
                 break;
@@ -125,6 +122,11 @@ public class Upgrade {
             case "Global":
                 for (int i = 0; i < this.group.length; i++){
                     this.group[i].setGlobalUpgrade(this.group[i].getGlobalUpgrade()+1);
+                }
+                break;
+            case "Job":
+                for (int i = 0; i < this.group.length; i++){
+                    this.group[i].setJobUpgrade(true);
                 }
                 break;
         }

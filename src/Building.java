@@ -256,7 +256,7 @@ public class Building {
     public void calculateUnitProduction(){
         double production = this.defaultProduction;
         if (this.jobUpgrade){
-            production += this.defaultProduction*0.1*this.jobLevel;
+            production += this.defaultProduction*0.01*this.jobLevel;
         }
         if (this.globalUpgrade > 0){
             production += this.defaultProduction*0.1*this.globalUpgrade;
