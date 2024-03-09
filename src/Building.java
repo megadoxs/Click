@@ -135,6 +135,10 @@ public class Building {
         groupUpgrade50.add(group);
     }
 
+    public void removeGroupUpgrade50(String group){
+        groupUpgrade50.remove(group);
+    }
+
     public ArrayList<String> getGroupUpgrade50() {
         return groupUpgrade50;
     }
@@ -259,7 +263,9 @@ public class Building {
             production += this.defaultProduction*0.01*this.jobLevel;
         }
         if (this.globalUpgrade > 0){
-            production += this.defaultProduction*0.1*this.globalUpgrade;
+            for (int i = 1; i <= this.globalUpgrade; i++){
+                production += this.defaultProduction*0.1*i;
+            }
         }
         if (this.doubleUpgrade) {
             production += this.defaultProduction;
@@ -424,6 +430,12 @@ public class Building {
     public static void setGlobalUpgradeLevel(Building[] buildings, int level){
         for (int i = 0; i < buildings.length; i++){
             buildings[i].setGlobalUpgrade(level);
+        }
+    }
+
+    public static void calculateAllUnitProduction(Building[] buildings){
+        for (int i = 0; i < buildings.length; i++){
+            buildings[i].calculateUnitProduction();
         }
     }
 

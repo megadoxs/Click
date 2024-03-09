@@ -26,7 +26,7 @@ public class Main {
         Buildings[11] = new Building("Forêt mystique", "hunter", new String[]{"foret"}, 64, 6000000, Buildings[10]);
         Buildings[12] = new Building("Jungle luxuriante", "farmer", new String[]{"foret"}, 115.45, 11500000, Buildings[11]);
         Buildings[13] = new Building("Temple oublié", "hunter", new String[]{}, 208, 25750000,  Buildings[12]);
-        Buildings[14] = new Building("Crypte Millénaire", "", new String[]{}, 375, 550000000,  Buildings[13]);
+        Buildings[14] = new Building("Crypte Millénaire", "hunter", new String[]{}, 375, 550000000,  Buildings[13]);
         Buildings[15] = new Building("Goufre sans fond", "", new String[]{}, 742, 950000000,  Buildings[14]);
         Buildings[16] = new Building("", "", new String[]{}, 0, 0);
         Buildings[17] = new Building("", "", new String[]{}, 0, 0);

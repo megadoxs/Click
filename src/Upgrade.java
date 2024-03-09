@@ -241,17 +241,53 @@ public class Upgrade {
         return this.getUpgradeValue() > value;
     }
 
+    public static void delUselessUpgrades(ArrayList<Upgrade> upgrades, Building[] buildings){
+        try {
+            File iFile = new File("./data/upgrades.txt");
+            File OFile = new File("temp.txt");
+            PrintWriter outputFile = new PrintWriter(OFile);
+            boolean firstLine = false;
+            ArrayList<Upgrade> addedUpgrades = new ArrayList<>(upgrades);
+
+            for (int i = 0; i < addedUpgrades.size(); i++){
+                if (addedUpgrades.get(i).isMultiple() && buildings[i].hasUpgrade(addedUpgrades.get(i).getType(), addedUpgrades.get(i).getType()))
+                    upgrades.remove(i);
+                else if (!addedUpgrades.get(i).isMultiple() && buildings[i].hasUpgrade(addedUpgrades.get(i).getType()))
+                    upgrades.remove(i);
+            }
+
+            for (int i = 0; i < upgrades.size(); i++){
+                if (firstLine)
+                    outputFile.println();
+                outputFile.print(upgrades.get(i).getName() + "|" + upgrades.get(i).getType() + "|" + upgrades.get(i).getTargetName() + "|" + upgrades.get(i).getPrice());
+                firstLine = true;
+            }
+
+
+            outputFile.close();
+            iFile.delete();
+            OFile.renameTo(new File("./data/upgrades.txt"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void delUpgrade(ArrayList<Upgrade> upgrades, Upgrade upgrade){
         try {
             File iFile = new File("./data/upgrades.txt");
             Scanner inputFile = new Scanner(iFile);
             File OFile = new File("temp.txt");
             PrintWriter outputFile = new PrintWriter(OFile);
+            boolean firstLine = false;
 
             while (inputFile.hasNextLine()) {
                 String lineUpgrade = inputFile.nextLine();
-                if(!lineUpgrade.equals(upgrade.getName()+ "|" + upgrade.getType() + "|" + upgrade.getTargetName() + "|" + upgrade.getPrice()))
-                    outputFile.println(lineUpgrade);
+                if(!lineUpgrade.equals(upgrade.getName()+ "|" + upgrade.getType() + "|" + upgrade.getTargetName() + "|" + upgrade.getPrice())) {
+                    if (firstLine)
+                        outputFile.println();
+                    outputFile.print(lineUpgrade);
+                    firstLine = true;
+                }
             }
 
             upgrades.remove(upgrade);
