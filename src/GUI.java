@@ -287,18 +287,18 @@ public class GUI extends JFrame{
 
     private String[] getBestPurchase(){
         String[] bestPurchase = new String[5];
-        if (Building.getBestPurchase(GUI.this.buildings).getValue() > Upgrade.getBestPurchase(GUI.this.upgrades).getValue()){
+        if (Building.getBestPurchase(GUI.this.buildings).getValue() > Upgrade.getBestPurchase(GUI.this.upgrades, Building.getTotalProd(buildings)).getValue()){
             bestPurchase[0] = GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()].getName();
             bestPurchase[1] = "Building";
             bestPurchase[2] = Building.getFormattedUpgradeBoost(GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()]);
             bestPurchase[3] = Building.getFormattedNewProd(GUI.this.buildings, GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()]);
             bestPurchase[4] = GUI.this.buildings[Building.getBestPurchase(GUI.this.buildings).getIndex()].getFormattedUpgradePrice();
         }else {
-            bestPurchase[0] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getName();
+            bestPurchase[0] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades, Building.getTotalProd(buildings)).getIndex()).getName();
             bestPurchase[1] = "Upgrade";
-            bestPurchase[2] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedUpgradeBoost();
-            bestPurchase[3] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedNewProd(GUI.this.buildings);
-            bestPurchase[4] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades).getIndex()).getFormattedPrice();
+            bestPurchase[2] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades, Building.getTotalProd(buildings)).getIndex()).getFormattedUpgradeBoost();
+            bestPurchase[3] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades, Building.getTotalProd(buildings)).getIndex()).getFormattedNewProd(GUI.this.buildings);
+            bestPurchase[4] = GUI.this.upgrades.get(Upgrade.getBestPurchase(GUI.this.upgrades, Building.getTotalProd(buildings)).getIndex()).getFormattedPrice();
         }
         return bestPurchase;
     }
@@ -329,7 +329,7 @@ public class GUI extends JFrame{
                 updateBuildings(evt);
             }
             else{
-                int id = Upgrade.getBestPurchase(upgrades).getIndex();
+                int id = Upgrade.getBestPurchase(upgrades, Building.getTotalProd(buildings)).getIndex();
                 upgrades.get(id).applyUpgrade();
                 if(upgrades.get(id).getGroup() != null){
                     for (int i = 0; i < upgrades.get(id).getGroup().length; i++){

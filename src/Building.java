@@ -20,7 +20,7 @@ public class Building {
     private boolean groupUpgrade; // 10% group
     private String groupUpgrade10;
     private ArrayList<String> groupUpgrade50 = new ArrayList<>(); // 50% groups upgrades
-
+    public static double defaultProd = 0.1;
     private static final DecimalFormat smallProd = new DecimalFormat("#0.00");
     private static final DecimalFormat bigProd = new DecimalFormat("#,#00");
 
@@ -317,8 +317,8 @@ public class Building {
         int index = 0;
         double value = 0;
         for (int i = 0; i < buildings.length; i++){
-            if (buildings[i].getUpgradeValue() > value && (buildings[i].getPreviousBuilding() == null || buildings[i].getPreviousBuilding().getLevel() > 0)){
-                value = buildings[i].getUpgradeValue();
+            if (buildings[i].getUpgradeValue()/(buildings[i].getUpgradePrice()/Building.getTotalProd(buildings)) > value && (i == 0 || buildings[i-1].getLevel() > 0)){
+                value = buildings[i].getUpgradeValue()/(buildings[i].getUpgradePrice()/Building.getTotalProd(buildings));
                 index = i;
             }
         }
@@ -437,6 +437,11 @@ public class Building {
         for (int i = 0; i < buildings.length; i++){
             buildings[i].calculateUnitProduction();
         }
+    }
+
+    public static double getDefaultProd(){
+        defaultProd = defaultProd*1.8;
+        return defaultProd;
     }
 
     public static class bestValue {

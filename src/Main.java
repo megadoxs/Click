@@ -9,44 +9,43 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-
         // add all buildings
         Building[] Buildings = new Building[35];
-        Buildings[0] = new Building("Mine abandonnée", "miner", 0.1, 1250);
-        Buildings[1] = new Building("Caverne aux gros cailloux", "miner", 0.18, 3500, Buildings[0]);
-        Buildings[2] = new Building("Mine des nains", "miner", new String[]{"humanoide"}, 0.324, 6000, Buildings[1]);
-        Buildings[3] = new Building("Jardin de mamie", "farmer", 0.584, 12500);
-        Buildings[4] = new Building("Cabane de sorcière", "alchemist", 1.06, 27500, Buildings[3]);
-        Buildings[5] = new Building("Ruche Bourdonnate", "alchemist", 1.89, 67500, Buildings[4]);
-        Buildings[6] = new Building("Foret enneigé", "alchemist", new String[]{"gelé", "foret"}, 3.4, 125000);
-        Buildings[7] = new Building("Banquise gelée", new String[]{"gelé", "eau"}, 6.12, 315000, Buildings[6]);
-        Buildings[8] = new Building("Port de pirate", new String[]{"humanoide", "eau"}, 11, 650000);
-        Buildings[9] = new Building("Ile volcanique", "farmer", new String[]{}, 20, 1574000, Buildings[8]);
-        Buildings[10] = new Building("Dune caniculaire", "hunter", new String[]{}, 36, 3150000, Buildings[9]);
-        Buildings[11] = new Building("Forêt mystique", "hunter", new String[]{"foret"}, 64, 6000000, Buildings[10]);
-        Buildings[12] = new Building("Jungle luxuriante", "farmer", new String[]{"foret"}, 115.45, 11500000, Buildings[11]);
-        Buildings[13] = new Building("Temple oublié", "hunter", new String[]{}, 208, 25750000,  Buildings[12]);
-        Buildings[14] = new Building("Crypte Millénaire", "hunter", new String[]{}, 375, 550000000,  Buildings[13]);
-        Buildings[15] = new Building("Goufre sans fond", "", new String[]{}, 742, 950000000,  Buildings[14]);
-        Buildings[16] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[17] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[18] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[19] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[20] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[21] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[22] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[23] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[24] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[25] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[26] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[27] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[28] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[29] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[30] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[31] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[32] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[33] = new Building("", "", new String[]{}, 0, 0);
-        Buildings[34] = new Building("", "", new String[]{}, 0, 0);
+        Buildings[0] = new Building("Mine abandonnée", "miner", Building.defaultProd, 1250);
+        Buildings[1] = new Building("Caverne aux gros cailloux", "miner", Building.getDefaultProd(), 3500, Buildings[0]);
+        Buildings[2] = new Building("Mine des nains", "miner", new String[]{"humanoide"}, Building.getDefaultProd(), 6000, Buildings[1]);
+        Buildings[3] = new Building("Jardin de mamie", "farmer", Building.getDefaultProd(), 12500);
+        Buildings[4] = new Building("Cabane de sorcière", "alchemist", Building.getDefaultProd(), 27500, Buildings[3]);
+        Buildings[5] = new Building("Ruche Bourdonnate", "alchemist", Building.getDefaultProd(), 67500, Buildings[4]);
+        Buildings[6] = new Building("Foret enneigé", "alchemist", new String[]{"gelé", "foret"}, Building.getDefaultProd(), 125000);
+        Buildings[7] = new Building("Banquise gelée", new String[]{"gelé", "eau"}, Building.getDefaultProd(), 315000, Buildings[6]);
+        Buildings[8] = new Building("Port de pirate", new String[]{"humanoide", "eau"}, Building.getDefaultProd(), 650000);
+        Buildings[9] = new Building("Ile volcanique", "farmer", Building.getDefaultProd(), 1574000, Buildings[8]);
+        Buildings[10] = new Building("Dune caniculaire", "hunter", Building.getDefaultProd(), 3150000, Buildings[9]);
+        Buildings[11] = new Building("Forêt mystique", "hunter", new String[]{"foret"}, Building.getDefaultProd(), 6000000, Buildings[10]);
+        Buildings[12] = new Building("Jungle luxuriante", "farmer", new String[]{"foret"}, Building.getDefaultProd(), 11500000, Buildings[11]);
+        Buildings[13] = new Building("Temple oublié", "hunter", Building.getDefaultProd(), 25750000,  Buildings[12]);
+        Buildings[14] = new Building("Crypte Millénaire", "hunter", Building.getDefaultProd(), 55000000,  Buildings[13]);
+        Buildings[15] = new Building("Goufre sans fond", "miner", Building.getDefaultProd(), 95000000,  Buildings[14]);
+        Buildings[16] = new Building("Mine autonome", "miner", new String[]{}, Building.getDefaultProd(), 185000000);
+        Buildings[17] = new Building("Ferme à golem", "", new String[]{}, Building.getDefaultProd(), 385000000);
+        Buildings[18] = new Building("Grotte radioactive", "", new String[]{}, Building.getDefaultProd(), 750000000);
+        Buildings[19] = new Building("Laboratoire Biologique", "", new String[]{}, Building.getDefaultProd(), 1350000000);
+        Buildings[20] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[21] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[22] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[23] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[24] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[25] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[26] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[27] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[28] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[29] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[30] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[31] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[32] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[33] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
+        Buildings[34] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);
 
 
         //makes the dir to store the data txt files

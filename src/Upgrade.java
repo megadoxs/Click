@@ -206,12 +206,12 @@ public class Upgrade {
         return getUpgradeBoost()/this.price;
     }
 
-    public static Building.bestValue getBestPurchase(ArrayList<Upgrade> upgrades){
+    public static Building.bestValue getBestPurchase(ArrayList<Upgrade> upgrades, double totalProd){
         int index = 0;
         double value = 0;
         for (int i = 0; i < upgrades.size(); i++){
-            if (upgrades.get(i).getUpgradeValue() > value){
-                value = upgrades.get(i).getUpgradeValue();
+            if (upgrades.get(i).getUpgradeValue()/(upgrades.get(i).getPrice()/totalProd) > value){
+                value = upgrades.get(i).getUpgradeValue()/(upgrades.get(i).getPrice()/totalProd);
                 index = i;
             }
         }
