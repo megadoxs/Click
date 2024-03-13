@@ -202,16 +202,20 @@ public class Upgrade {
         return total;
     }
 
-    public double getUpgradeValue(){
-        return getUpgradeBoost()/this.price;
+    public double getUpgradeValue(Building[] buildings){
+        return getUpgradeBoost()/this.price+this.price/Building.getTotalProd(buildings);
+    }
+
+    public double getUpgradeValue(double totalProd){
+        return getUpgradeBoost()/this.price+this.price/totalProd;
     }
 
     public static Building.bestValue getBestPurchase(ArrayList<Upgrade> upgrades, double totalProd){
         int index = 0;
         double value = 0;
         for (int i = 0; i < upgrades.size(); i++){
-            if (upgrades.get(i).getUpgradeValue()/(upgrades.get(i).getPrice()/totalProd) > value){
-                value = upgrades.get(i).getUpgradeValue()/(upgrades.get(i).getPrice()/totalProd);
+            if (upgrades.get(i).getUpgradeValue(totalProd) > value){
+                value = upgrades.get(i).getUpgradeValue(totalProd);
                 index = i;
             }
         }
@@ -229,16 +233,16 @@ public class Upgrade {
     public boolean isBestPurchase(ArrayList<Upgrade> upgrades, Building[] buildings){
         double value = 0;
         for (int i = 0; i < upgrades.size(); i++){
-            if (upgrades.get(i).getUpgradeValue() > value){
-                value = upgrades.get(i).getUpgradeValue();
+            if (upgrades.get(i).getUpgradeValue(buildings) > value){
+                value = upgrades.get(i).getUpgradeValue(buildings);
             }
         }
         for (int i = 0; i < buildings.length; i++){
-            if (buildings[i].getUpgradeValue() > value){
-                value = buildings[i].getUpgradeValue();
+            if (buildings[i].getUpgradeValue(buildings) > value){
+                value = buildings[i].getUpgradeValue(buildings);
             }
         }
-        return this.getUpgradeValue() > value;
+        return this.getUpgradeValue(buildings) > value;
     }
 
     public static void delUselessUpgrades(ArrayList<Upgrade> upgrades, Building[] buildings){
@@ -301,14 +305,14 @@ public class Upgrade {
         }
     }
 
-    public static void sortUpgrades(ArrayList<Upgrade> upgrades){
+    public static void sortUpgrades(ArrayList<Upgrade> upgrades, double totalProd){
         ArrayList<Upgrade> sort = new ArrayList<>();
         while(!upgrades.isEmpty()){
             int id = 0;
             double value = 0;
             for (int i = 0; i < upgrades.size(); i++){
-                if (upgrades.get(i).getUpgradeValue() > value) {
-                    value = upgrades.get(i).getUpgradeValue();
+                if (upgrades.get(i).getUpgradeValue(totalProd) > value) {
+                    value = upgrades.get(i).getUpgradeValue(totalProd);
                     id = i;
                 }
             }

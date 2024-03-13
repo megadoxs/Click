@@ -32,6 +32,7 @@ public class GUI extends JFrame{
             if (addUpgradeGUI == null) {
                 addUpgradeGUI = new AddUpgradeGUI();
             } else {
+                addUpgradeGUI.setExtendedState(NORMAL);
                 addUpgradeGUI.toFront();
             }
         }
@@ -43,6 +44,7 @@ public class GUI extends JFrame{
             if (listUpgradeGUI == null) {
                 listUpgradeGUI = new listUpgradeGUI();
             } else {
+                listUpgradeGUI.setExtendedState(NORMAL);
                 listUpgradeGUI.toFront();
             }
         }
@@ -54,6 +56,7 @@ public class GUI extends JFrame{
             if (buildingsUpgradesGUI == null) {
                 buildingsUpgradesGUI = new BuildingsUpgradeGUI();
             } else {
+                buildingsUpgradesGUI.setExtendedState(NORMAL);
                 buildingsUpgradesGUI.toFront();
             }
         }
@@ -459,7 +462,7 @@ public class GUI extends JFrame{
             add(selectTarget, gbc);
 
             gbc.gridy++;
-            enterPrice = new NumericTextField("addUpgrade");
+            enterPrice = new NumericTextField("addUpgrade", Integer.MAX_VALUE);
             add(enterPrice, gbc);
 
             gbc.gridy++;
@@ -803,7 +806,7 @@ public class GUI extends JFrame{
 
             gbc.gridx = 0;
             gbc.gridy = 2;
-            Upgrade.sortUpgrades(upgrades);
+            Upgrade.sortUpgrades(upgrades, Building.getTotalProd(buildings));
             for (int i = 0; i < GUI.this.upgrades.size(); i++){
                 //start
                 gbc.gridx = 0;
@@ -842,7 +845,7 @@ public class GUI extends JFrame{
                 gbc.gridx++;
 
                 //upgrade price
-                upgradePrice[i] = new NumericTextField("listUpgrade");
+                upgradePrice[i] = new NumericTextField("listUpgrade", Integer.MAX_VALUE);
                 upgradePrice[i].setText(upgrades.get(i).getFormattedPrice());
                 upgradePrice[i].setEditable(false);
                 upgradePrice[i].setHorizontalAlignment(JTextField.RIGHT);
@@ -1020,12 +1023,14 @@ public class GUI extends JFrame{
         JCheckBox[] group10 = new JCheckBox[GUI.this.groups10.length];
         JCheckBox[] group50 = new JCheckBox[GUI.this.groups50.length];
         JCheckBox[] job = new JCheckBox[GUI.this.groups10.length];
-        JTextField globalLevel;
+        NumericTextField globalLevel;
 
         //buttons
         JButton modify = new JButton("modify");
         JButton apply = new JButton("Apply");
         JButton cancel = new JButton("Cancel");
+        JButton addUpgrade = GUI.this.addUpgrade.clone();
+        JButton upgradeList = GUI.this.upgradeList.clone();
 
         public BuildingsUpgradeGUI() throws HeadlessException {
             setTitle("Buildings's Upgrades");
@@ -1055,9 +1060,8 @@ public class GUI extends JFrame{
             sameBuilding = new JCheckBox[GUI.this.buildings.length];
             previousBuilding = new JCheckBox[GUI.this.buildings.length];
 
-            gbc.gridy = 1;
+            gbc.gridy = 0;
             gbc.gridx = 1;
-
             add(new JLabel("Level"), gbc);
             gbc.gridx++;
             add(new JLabel("100%"), gbc);
@@ -1136,17 +1140,27 @@ public class GUI extends JFrame{
             apply.setMargin(noMargin);
             cancel.setMargin(noMargin);
 
+            gbc.gridy = 13;
+            add(addUpgrade, gbc);
+
+            gbc.gridy++;
+            add(upgradeList, gbc);
+
             updateBuildingUpgrades();
             //listeners
             modify.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     remove(modify);
+                    remove(addUpgrade);
+                    remove(upgradeList);
                     for (int i = 0; i < GUI.this.buildings.length; i++){
                         levels[i].setEditable(true);
-                        doubleProd[i].setEnabled(true);
-                        tripleProd[i].setEnabled(true);
-                        sameBuilding[i].setEnabled(true);
-                        if (!(previousBuilding[i] instanceof BetterCheckBox))
+                        if (GUI.this.buildings[i].isUpgradable()) {
+                            doubleProd[i].setEnabled(true);
+                            tripleProd[i].setEnabled(true);
+                            sameBuilding[i].setEnabled(true);
+                        }
+                        if (!(previousBuilding[i] instanceof BetterCheckBox) && GUI.this.buildings[i].isUpgradable())
                             previousBuilding[i].setEnabled(true);
                     }
                     for (int i = 0; i < GUI.this.groups50.length; i++){
@@ -1160,6 +1174,10 @@ public class GUI extends JFrame{
                     add(apply, gbc);
                     gbc.gridy++;
                     add(cancel, gbc);
+                    gbc.gridy = 14;
+                    add(addUpgrade, gbc);
+                    gbc.gridy++;
+                    add(upgradeList, gbc);
                     pack();
                 }
             });
@@ -1168,9 +1186,15 @@ public class GUI extends JFrame{
                 public void actionPerformed(ActionEvent e) {
                     remove(apply);
                     remove(cancel);
+                    remove(addUpgrade);
+                    remove(upgradeList);
                     gbc.gridy = 11;
                     gbc.gridx = 6;
                     add(modify,gbc);
+                    gbc.gridy = 13;
+                    add(addUpgrade, gbc);
+                    gbc.gridy++;
+                    add(upgradeList, gbc);
                     for(int i = 0; i < GUI.this.buildings.length; i++){
                         GUI.this.buildings[i].setLevel(Integer.parseInt(levels[i].getText()));
                         GUI.this.buildings[i].setDoubleUpgrade(doubleProd[i].isSelected());
@@ -1220,9 +1244,15 @@ public class GUI extends JFrame{
                 public void actionPerformed(ActionEvent e) {
                     remove(apply);
                     remove(cancel);
+                    remove(addUpgrade);
+                    remove(upgradeList);
                     gbc.gridy = 11;
                     gbc.gridx = 6;
                     add(modify,gbc);
+                    gbc.gridy = 13;
+                    add(addUpgrade, gbc);
+                    gbc.gridy++;
+                    add(upgradeList, gbc);
                     for (int i = 0; i < GUI.this.buildings.length; i++){
                         remove(levels[i]);
                         remove(doubleProd[i]);
@@ -1247,35 +1277,43 @@ public class GUI extends JFrame{
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = new Insets(3, 5, 3, 5);
 
-            gbc.gridy = 2;
+            gbc.gridy = 1;
             for (int i = 0; i < buildings.length; i++){
                 gbc.gridx = 1;
 
-                levels[i] = new JTextField(Integer.toString(buildings[i].getLevel()));
+                levels[i] = new NumericTextField("levels",99);
+                levels[i].setText(Integer.toString(buildings[i].getLevel()));
                 levels[i].setEditable(false);
                 levels[i].setHorizontalAlignment(JTextField.CENTER);
                 add(levels[i], gbc);
                 gbc.gridx++;
 
-                doubleProd[i] = new JCheckBox((Icon) null, buildings[i].isDoubleUpgrade());
+                if (buildings[i].isUpgradable()){
+                    sameBuilding[i] = new JCheckBox((Icon) null, buildings[i].isSameBuildingUpgrade());
+                    tripleProd[i] = new JCheckBox((Icon) null, buildings[i].isTripleUpgrade());
+                    doubleProd[i] = new JCheckBox((Icon) null, buildings[i].isDoubleUpgrade());
+                }else {
+                    sameBuilding[i] = new BetterCheckBox();
+                    tripleProd[i] = new BetterCheckBox();
+                    doubleProd[i] = new BetterCheckBox();
+                }
+
                 doubleProd[i].setEnabled(false);
                 doubleProd[i].setHorizontalAlignment(JTextField.CENTER);
                 add(doubleProd[i], gbc);
                 gbc.gridx++;
 
-                tripleProd[i] = new JCheckBox((Icon) null, buildings[i].isTripleUpgrade());
                 tripleProd[i].setEnabled(false);
                 tripleProd[i].setHorizontalAlignment(JTextField.CENTER);
                 add(tripleProd[i], gbc);
                 gbc.gridx++;
 
-                sameBuilding[i] = new JCheckBox((Icon) null, buildings[i].isSameBuildingUpgrade());
                 sameBuilding[i].setEnabled(false);
                 sameBuilding[i].setHorizontalAlignment(JTextField.CENTER);
                 add(sameBuilding[i], gbc);
                 gbc.gridx++;
 
-                if (buildings[i].getPreviousBuilding() != null){
+                if (buildings[i].getPreviousBuilding() != null && buildings[i].isUpgradable()){
                     previousBuilding[i] = new JCheckBox((Icon) null, buildings[i].isPreviousBuildingUpgrade());
                 }else {
                     previousBuilding[i] = new BetterCheckBox();
@@ -1317,7 +1355,8 @@ public class GUI extends JFrame{
 
             gbc.gridy = 8;
             gbc.gridx = 7;
-            globalLevel = new JTextField(Integer.toString(GUI.this.buildings[0].getGlobalUpgrade()));
+            globalLevel = new NumericTextField("Global Level", 10);
+            globalLevel.setText(Integer.toString(GUI.this.buildings[0].getGlobalUpgrade()));
             globalLevel.setEditable(false);
             add(globalLevel, gbc);
 
@@ -1394,11 +1433,11 @@ public class GUI extends JFrame{
     }
 
     // NumericTextField for edit upgrade and add upgrade
-    public static class NumericTextField extends JTextField {
+    public class NumericTextField extends JTextField {
         private final DecimalFormat formatter;
         private final String GUI;
 
-        public NumericTextField(String GUI) {
+        public NumericTextField(String GUI, double max) {
             super();
             this.GUI = GUI;
 
@@ -1410,8 +1449,13 @@ public class GUI extends JFrame{
                 @Override
                 public void keyTyped(KeyEvent e) {
                     char c = e.getKeyChar();
-                    if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE)) {
+                    if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE) || (!Character.isDigit(c) && getText().isEmpty()) || (c == '0' && getCaretPosition() == 0) || Long.parseLong((getText()+ c).replaceAll("\\D", "")) > Integer.MAX_VALUE) {
                         e.consume();
+                    }
+                    if (Character.isDigit(c) && !getText().isEmpty()){
+                        long numb = Long.parseLong((getText()+ c).replaceAll("\\D", ""));
+                        if (numb > max)
+                            e.consume();
                     }
                 }
 
@@ -1421,7 +1465,7 @@ public class GUI extends JFrame{
 
                 @Override
                 public void keyReleased(KeyEvent e) {
-                    if(!(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT))
+                    if(!(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) && !getText().isEmpty() && Integer.parseInt(getText().replaceAll("\\D", "")) > 999 )
                         formatText();
                 }
             });
@@ -1429,7 +1473,7 @@ public class GUI extends JFrame{
 
         private void formatText() {
             try {
-                String text = getText().replaceAll("\\s", "");
+                String text = getText().replaceAll("\\D", "");
                 long value = formatter.parse(text).longValue();
                 String formattedText = formatter.format(value);
                 setText(formattedText);

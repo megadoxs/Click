@@ -7,6 +7,7 @@ public class Building {
     private String group;
     private int jobLevel;
     private int level;
+    private boolean upgradable;
     private int globalUpgrade;
     private final double defaultProduction;
     private double unitProduction;
@@ -33,6 +34,7 @@ public class Building {
         this.previousBuilding = previousBuilding;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
     }
 
     public Building(String name, String[] groups, double defaultProduction, double defaultPrice, Building previousBuilding) { // constructor without job
@@ -43,6 +45,7 @@ public class Building {
         this.previousBuilding = previousBuilding;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
     }
     public Building(String name, String group, double defaultProduction, double defaultPrice, Building previousBuilding) { // constructor with all upgrades
         this.name = name;
@@ -52,6 +55,7 @@ public class Building {
         this.previousBuilding = previousBuilding;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
     }
 
     public Building(String name, String group, String[] groups, double defaultProduction, double defaultPrice) { // constructor without previous upgrade & with groups
@@ -62,6 +66,7 @@ public class Building {
         this.defaultPrice = defaultPrice;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
     }
 
     public Building(String name, String[] groups, double defaultProduction, double defaultPrice) { // constructor without previous upgrade & with groups
@@ -71,6 +76,7 @@ public class Building {
         this.defaultPrice = defaultPrice;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
     }
 
     public Building(String name, String group, double defaultProduction, double defaultPrice) { // constructor without previous upgrade & without groups
@@ -80,6 +86,17 @@ public class Building {
         this.defaultPrice = defaultPrice;
         this.unitProduction = defaultProduction;
         this.level = 0;
+        this.upgradable = true;
+    }
+
+    public Building(String name, String group, boolean upgradable, double defaultProduction, double defaultPrice) { // constructor without previous upgrade & without groups
+        this.name = name;
+        this.group = group;
+        this.defaultProduction = defaultProduction;
+        this.defaultPrice = defaultPrice;
+        this.unitProduction = defaultProduction;
+        this.level = 0;
+        this.upgradable = upgradable;
     }
 
     public Building(Building building){
@@ -100,7 +117,12 @@ public class Building {
         this.groupUpgrade50 = new ArrayList<>();
         this.groupUpgrade50.addAll(building.getGroupUpgrade50());
         this.groupUpgrade10 = building.groupUpgrade10;
+        this.upgradable = building.isUpgradable();
         calculateUnitProduction();
+    }
+
+    public boolean isUpgradable() {
+        return upgradable;
     }
 
     public void setJobLevel(int level){
@@ -227,7 +249,8 @@ public class Building {
     }
 
     public void addLevel(){
-        this.level += 1;
+        if(this.level < 99)
+            this.level += 1;
     }
 
     public void delLevel(){
@@ -309,16 +332,16 @@ public class Building {
         return total;
     }
 
-    public double getUpgradeValue(){
-        return this.unitProduction/getUpgradePrice();
+    public double getUpgradeValue(Building[] buildings){
+        return this.unitProduction/(getUpgradePrice()+this.getUpgradePrice()/Building.getTotalProd(buildings));
     }
 
     public static bestValue getBestPurchase(Building[] buildings){
         int index = 0;
         double value = 0;
         for (int i = 0; i < buildings.length; i++){
-            if (buildings[i].getUpgradeValue()/(buildings[i].getUpgradePrice()/Building.getTotalProd(buildings)) > value && (i == 0 || buildings[i-1].getLevel() > 0)){
-                value = buildings[i].getUpgradeValue()/(buildings[i].getUpgradePrice()/Building.getTotalProd(buildings));
+            if (buildings[i].getUpgradeValue(buildings) > value && (i == 0 || buildings[i-1].getLevel() > 0)){
+                value = buildings[i].getUpgradeValue(buildings);
                 index = i;
             }
         }
@@ -387,13 +410,16 @@ public class Building {
             case "Job":
                 return this.jobUpgrade;
             case "100%":
-                return this.doubleUpgrade;
+                if (this.upgradable)
+                    return this.doubleUpgrade;
             case "200%":
-                return this.tripleUpgrade;
+                if (this.upgradable)
+                    return this.tripleUpgrade;
             case "1% per same building":
-                return this.sameBuildingUpgrade;
+                if (this.upgradable)
+                    return this.sameBuildingUpgrade;
             case "1% per previous building":
-                if (this.previousBuilding != null)
+                if (this.previousBuilding != null && this.upgradable)
                     return this.previousBuildingUpgrade;
                 else
                     return true;
