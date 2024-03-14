@@ -286,9 +286,7 @@ public class Building {
             production += this.defaultProduction*0.01*this.jobLevel;
         }
         if (this.globalUpgrade > 0){
-            for (int i = 1; i <= this.globalUpgrade; i++){
-                production += this.defaultProduction*0.1*i;
-            }
+            production += this.defaultProduction*0.1*this.globalUpgrade;
         }
         if (this.doubleUpgrade) {
             production += this.defaultProduction;

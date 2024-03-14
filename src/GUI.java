@@ -82,9 +82,8 @@ public class GUI extends JFrame{
 
     public void setGUI(){
         setTitle("Clicker");
-        setVisible(true);
         setLayout(new GridBagLayout());
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);;
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addClosingListener();
 
         //layouts
@@ -228,6 +227,8 @@ public class GUI extends JFrame{
 
         //pack
         pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
     private class BetterButton extends JButton{
@@ -404,7 +405,6 @@ public class GUI extends JFrame{
         public AddUpgradeGUI() throws HeadlessException {
             //layout
             setTitle("Add Upgrade");
-            setVisible(true);
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             addClosingListener();
             setLayout(new GridBagLayout());
@@ -624,6 +624,8 @@ public class GUI extends JFrame{
 
             //pack
             pack();
+            setLocationRelativeTo(null);
+            setVisible(true);
         }
 
         public void updateStats(){
@@ -712,7 +714,6 @@ public class GUI extends JFrame{
 
         listUpgradeGUI(){
             setTitle("Upgrade List");
-            setVisible(true);
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             addClosingListener();
             setLayout(new GridBagLayout());
@@ -880,6 +881,8 @@ public class GUI extends JFrame{
                 gbc.gridy++;
             }
             pack();
+            setLocationRelativeTo(null);
+            setVisible(true);
         }
 
 
@@ -1034,7 +1037,6 @@ public class GUI extends JFrame{
 
         public BuildingsUpgradeGUI() throws HeadlessException {
             setTitle("Buildings's Upgrades");
-            setVisible(true);
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             addClosingListener();
             setLayout(new GridBagLayout());
@@ -1147,6 +1149,8 @@ public class GUI extends JFrame{
             add(upgradeList, gbc);
 
             updateBuildingUpgrades();
+            setLocationRelativeTo(null);
+            setVisible(true);
             //listeners
             modify.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1196,7 +1200,7 @@ public class GUI extends JFrame{
                     gbc.gridy++;
                     add(upgradeList, gbc);
                     for(int i = 0; i < GUI.this.buildings.length; i++){
-                        GUI.this.buildings[i].setLevel(Integer.parseInt(levels[i].getText()));
+                        GUI.this.buildings[i].setLevel(!levels[i].getText().isEmpty()?Integer.parseInt(levels[i].getText()):GUI.this.buildings[i].getLevel());
                         GUI.this.buildings[i].setDoubleUpgrade(doubleProd[i].isSelected());
                         GUI.this.buildings[i].setTripleUpgrade(tripleProd[i].isSelected());
                         GUI.this.buildings[i].setSameBuildingUpgrade(sameBuilding[i].isSelected());
@@ -1214,8 +1218,10 @@ public class GUI extends JFrame{
                             Building.getGroup(GUI.this.buildings, GUI.this.groups10[i], false)[j].setJobUpgrade(BuildingsUpgradeGUI.this.job[i].isSelected());
                         }
                     }
-                    Building.setGlobalUpgradeLevel(GUI.this.buildings, Integer.parseInt(globalLevel.getText()));
+                    Building.setGlobalUpgradeLevel(GUI.this.buildings, !globalLevel.getText().isEmpty()?Integer.parseInt(globalLevel.getText()):GUI.this.buildings[0].getGlobalUpgrade());
                     for (int i = 0; i < GUI.this.buildings.length; i++){
+                        if (levels[i].getText().isEmpty())
+                            levels[i].setText(Integer.toString(GUI.this.buildings[i].getLevel()));
                         levels[i].setEditable(false);
                         doubleProd[i].setEnabled(false);
                         tripleProd[i].setEnabled(false);
@@ -1229,6 +1235,8 @@ public class GUI extends JFrame{
                         BuildingsUpgradeGUI.this.job[i].setEnabled(false);
                     }
                     globalLevel.setEditable(false);
+                    if (globalLevel.getText().isEmpty())
+                        globalLevel.setText(Integer.toString(GUI.this.buildings[0].getGlobalUpgrade()));
                     pack();
                     Upgrade.delUselessUpgrades(upgrades, GUI.this.buildings);
                     Building.calculateAllUnitProduction(GUI.this.buildings);
@@ -1434,17 +1442,31 @@ public class GUI extends JFrame{
 
     // NumericTextField for edit upgrade and add upgrade
     public class NumericTextField extends JTextField {
-        private final DecimalFormat formatter;
-        private final String GUI;
+        private final DecimalFormat formatter = new DecimalFormat("#,###");;
+        private String GUI; // will be removed
+        private double max;
+
+        public NumericTextField(){
+            super();
+            addListener();
+        }
+        public NumericTextField(double max){
+            super();
+            this.max = max;
+            addListener();
+        }
 
         public NumericTextField(String GUI, double max) {
             super();
             this.GUI = GUI;
+            this.max = max;
+            addListener();
 
-            formatter = new DecimalFormat("#,###");
             formatter.setGroupingSize(3);
             formatter.setParseIntegerOnly(true);
+        }
 
+        private void  addListener(){ // make it given by default
             addKeyListener(new KeyListener() {
                 @Override
                 public void keyTyped(KeyEvent e) {
@@ -1452,7 +1474,7 @@ public class GUI extends JFrame{
                     if (!(Character.isDigit(c) || c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE) || (!Character.isDigit(c) && getText().isEmpty()) || (c == '0' && getCaretPosition() == 0) || Long.parseLong((getText()+ c).replaceAll("\\D", "")) > Integer.MAX_VALUE) {
                         e.consume();
                     }
-                    if (Character.isDigit(c) && !getText().isEmpty()){
+                    if (Character.isDigit(c) && !getText().isEmpty() && max > 0){
                         long numb = Long.parseLong((getText()+ c).replaceAll("\\D", ""));
                         if (numb > max)
                             e.consume();
