@@ -28,7 +28,7 @@ public class Main {
         Buildings[14] = new Building("Crypte Millénaire", "hunter", Building.getDefaultProd(), 55000000,  Buildings[13]);
         Buildings[15] = new Building("Goufre sans fond", "miner", Building.getDefaultProd(), 95000000,  Buildings[14]);
         Buildings[16] = new Building("Mine autonome", "miner", false,  Building.getDefaultProd(), 185000000);
-        Buildings[17] = new Building("Ferme à golem", "", new String[]{}, Building.getDefaultProd(), 385000000);
+        Buildings[17] = new Building("Ferme à golem", "", false, Building.getDefaultProd(), 385000000);
         Buildings[18] = new Building("Grotte radioactive", "", new String[]{}, Building.getDefaultProd(), 750000000);
         Buildings[19] = new Building("Laboratoire Biologique", "", new String[]{}, Building.getDefaultProd(), 1350000000);
         Buildings[20] = new Building("", "", new String[]{}, Building.getDefaultProd(), 0);

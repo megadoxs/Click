@@ -207,7 +207,7 @@ public class Upgrade {
     }
 
     public double getUpgradeValue(double totalProd){
-        return getUpgradeBoost()/this.price+this.price/totalProd;
+        return getUpgradeBoost()/(this.price+this.price/totalProd);
     }
 
     public static Building.bestValue getBestPurchase(ArrayList<Upgrade> upgrades, double totalProd){
